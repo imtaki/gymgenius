@@ -1,36 +1,111 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎨 GymGenius Frontend (Next.js + shadcn/ui + TailwindCSS)
 
-## Getting Started
+## 📌 Overview
 
-First, run the development server:
+The frontend for **GymGenius** is built with **Next.js**, styled using **TailwindCSS**, and leverages **shadcn/ui** for accessible, modern UI components. It connects with the Spring Boot backend to deliver a seamless fitness tracking experience.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## 🔹 Core Features (UI)
+
+### 1. Authentication & User Profiles
+
+* Sign up / Login pages.
+* Profile page with user details (weight, height, age, goal).
+* JWT stored securely (httpOnly cookies).
+
+### 2. Training Splits & Workouts
+
+* Dashboard with training templates (Push/Pull/Legs, Upper/Lower).
+* Custom workout builder UI.
+* Exercise logging (sets, reps, weights).
+
+### 3. Progress Tracking
+
+* Graphs for **weight over time**.
+* PR highlights (best lifts).
+* Calendar view of past workouts.
+
+### 4. Nutrition *(Optional)*
+
+* Daily calorie & macro goals UI.
+* Meal logging with macro breakdown.
+
+---
+
+## 🛠️ Tech Stack
+
+* **Next.js 14+ (App Router)**
+* **TailwindCSS** (utility-first styling)
+* **shadcn/ui** (prebuilt accessible components)
+* **React Query (API state management)
+* **Axios** (API client)
+
+---
+
+## 📂 Project Structure
+
+```
+gymgenius-frontend/
+ ┣ 📂 app             # Next.js App Router pages
+ ┣ 📂 components     # UI Components
+ ┃ ┣ 📂 ui           # Reusable UI components (shadcn)
+ ┣ 📂 hooks          # Custom React hooks (API, auth)
+ ┣ 📂 lib            # Utilities (axios instance, helpers)
+ ┣ 📂 styles         # Tailwind global styles
+ ┣ tailwind.config.js
+ ┣ package.json
+ ┗ tsconfig.json
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🎨 UI Guidelines
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+* **shadcn/ui** for buttons, inputs, cards, modals.
+* **TailwindCSS** for layout + responsive design.
+* Keep UI **minimal, modern, mobile-first**.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 🔄 Git Workflow (PR Strategy)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Branching Model
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+* **master** → stable production-ready code.
+* **dev** → active development branch.
+* **feature/**\* → feature branches branched from `dev`.
 
-## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Commit Message Convention
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+<type>(scope): short description
+```
+
+**Types:**
+
+* `feat` → new feature
+* `fix` → bug fix
+* `docs` → documentation only
+* `style` → formatting, missing semi-colons, etc.
+* `refactor` → code restructuring
+* `test` → adding/updating tests
+* `chore` → maintenance, CI/CD, tooling
+
+✅ Example:
+
+```
+feat(workouts): add custom workout builder page
+fix(auth): resolve JWT expiration handling
+```
+
+---
+
+## ✅ Next Steps
+
+* Scaffold UI with **Next.js App Router**.
+* Integrate **auth API** (JWT with backend).
+* Build dashboard & workout logging flows.
+* Add charts with **Recharts or Victory** for progress.
+* Enforce PR workflow with GitHub branch protections.
