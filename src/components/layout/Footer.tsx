@@ -28,8 +28,8 @@ export default function Footer() {
     ];
 
     return (
-    <footer className="py-16 bg-muted/30">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <footer className="py-14 border-t border-white/10" > 
+        <div className="container  mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-8">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-2 mb-4">
@@ -70,7 +70,7 @@ export default function Footer() {
               </ul>
             </div>
           </div>
-          <div className="border-t mt-12 pt-8 text-center text-muted-foreground">
+          <div className="mt-8 pt-6 text-center text-muted-foreground">
             <p>&copy; {currentYear} GymGenius. All rights reserved.</p>
           </div>
         </div>
