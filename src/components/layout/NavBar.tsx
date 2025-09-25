@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button";
 import { Dumbbell } from "lucide-react";
 import Link from "next/link";
@@ -15,8 +14,7 @@ export default function NavBar() {
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center space-x-2">
               <Dumbbell className="h-8 w-8 text-white" />
-              <span className="text-2xl font-bold text-white">GymGenius</span>
-              <Badge variant="outline" className="hidden sm:inline-flex text-white border-white">AI Powered</Badge>
+              <span className="text-2xl font-bold text-white"><Link href="/" >GymGenius</Link></span>
             </div>
             <nav className="hidden md:flex items-center space-x-6">
               {navItems.map((item) =>
@@ -24,9 +22,9 @@ export default function NavBar() {
                 >{item.name}</Link>
               )}
             </nav>
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" size="sm" className="text-white border-white hover:bg-white hover:text-black">Sign In</Button>
-              <Button size="sm" className="bg-white text-black hover:bg-white/90">Get Started</Button>
+            <div className="flex items-center space-x-6">
+              <Link className="text-muted-foreground " href="/login">Login</Link>
+              <Button size="sm" className="bg-white text-black hover:bg-white/90"><Link href="/signup">Sign Up</Link></Button>
             </div>
           </div>
         </div>
