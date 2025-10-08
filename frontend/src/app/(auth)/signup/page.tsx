@@ -100,21 +100,18 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center space-x-2 mb-6">
-            <Dumbbell className="h-10 w-10 text-blue-500" />
+            <Dumbbell className="h-10 w-10 " />
             <span className="text-3xl font-bold text-white">
-              <Link href="/" className="hover:text-blue-400 transition-colors">
-                GymGenius
-              </Link>
             </span>
           </div>
-          <p className="text-slate-400">Create your account and start your fitness journey</p>
+          <p className="">Create your account and start your fitness journey</p>
         </div>
 
-        <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl border border-slate-700 p-8 shadow-2xl">
+        <div className=" backdrop-blur-sm rounded-2xl border border-slate-700 p-8 shadow-2xl">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 gap-4">
               <div>
@@ -268,7 +265,7 @@ export default function SignUpPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center"
+              className="w-full bg-zinc-800 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center"
             >
               {isLoading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
