@@ -4,7 +4,8 @@ import { useState } from "react";
 import { Dumbbell, Eye, EyeOff, Mail, Lock } from "lucide-react";
 import Link from "next/link";
 import { z } from "zod";
-
+import api from "../../utils/axios";
+import { useRouter } from "next/navigation";
 const loginSchema = z.object({
   email: z
     .string()
@@ -19,6 +20,7 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
@@ -51,9 +53,21 @@ export default function LoginPage() {
       
       setErrors({});
       
-      // API CALL
+      const response = await api.post("/api/auth/login", {
+        email: validatedData.email,
+        password: validatedData.password,
+      });
+
+      const { accessToken, user } = response.data;
+      const { role } = user;
+
+      if (response.status === 201 || response.status === 200) {
+        document.cookie = `role=${role}; path=/;`;
+        document.cookie = `token=${accessToken}; path=/;`;
+      }
+      api.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+      router.push("/dashboard");
       
-      // Redirect AND show success message after timeout
       
       
     } catch (error) {
@@ -67,7 +81,6 @@ export default function LoginPage() {
         setErrors(fieldErrors);
       } else {
         console.error("Login error:", error);
-        alert("Login failed. Please try again.");
       }
     } finally {
       setIsLoading(false);

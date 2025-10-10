@@ -1,23 +1,35 @@
 "use client";
 
 import Link from "next/link";
-import {useState} from "react";
+import { useState, useEffect } from "react";
+import api from "../../app/utils/axios";
 import { usePathname } from "next/navigation";
-import { LucideIcon, Menu, X, House, BookOpen, User,Settings, CodeXml } from "lucide-react";
+import {
+  LucideIcon,
+  Menu,
+  X,
+  House,
+  User,
+  Settings,
+  Dumbbell,
+  CodeXml,
+} from "lucide-react";
 
 interface SidebarLinkProps {
   href: string;
   label: string;
-  icon: LucideIcon,
+  icon: LucideIcon;
 }
+
 const SidebarLink = ({ href, label, icon: Icon }: SidebarLinkProps) => {
   const pathname = usePathname();
   const isActive = pathname === href;
   return (
     <Link href={href} className="w-full">
-      <div className={`relative flex cursor-pointer items-center transition-colors
+      <div
+        className={`relative flex cursor-pointer items-center transition-colors
         ${isActive ? "bg-white/10" : "hover:bg-white/20"} justify-start px-8 py-3`}
-        >
+      >
         {isActive && (
           <div className="absolute left-0 top-0 h-[100%] w-[5px] bg-white" />
         )}
@@ -28,15 +40,50 @@ const SidebarLink = ({ href, label, icon: Icon }: SidebarLinkProps) => {
   );
 };
 
+/** Helper to read a cookie by name */
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
+  return match ? decodeURIComponent(match[2]) : null;
+}
+
 export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
+
   const navItems = [
-    { label: "Home", href: "/dashboard", icon: House },
-    { label: "My Sessions", href: "/sessions", icon: CodeXml },
+    { label: "Dashboard", href: "/dashboard", icon: House },
     { label: "Profile", href: "/profile", icon: User },
     { label: "Settings", href: "/settings", icon: Settings },
-    { label: "Docs", href: "/docs", icon: BookOpen },
   ];
+
+  useEffect(() => {
+    const token = getCookie("token");
+    const userRole = getCookie("role");
+    setIsLoggedIn(!!token);
+    setRole(userRole);
+  }, []);
+
+  async function handleLogout() {
+    const token = getCookie("token");
+    if (!token) return;
+
+    try {
+      const res = await api.post("/api/auth/logout", { token });
+      if (res.status === 200) {
+        // delete cookies manually
+        document.cookie = "token=; path=/; max-age=0;";
+        document.cookie = "role=; path=/; max-age=0;";
+        setIsLoggedIn(false);
+        setRole(null);
+        window.location.href = "/login";
+      }
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  }
+
   return (
     <>
       {isCollapsed && (
@@ -48,15 +95,19 @@ export default function Sidebar() {
         </button>
       )}
 
-      <div className={`flex flex-col h-screen justify-between shadow-xl
+      <div
+        className={`flex flex-col h-screen justify-between shadow-xl
         transition-all duration-300 z-40 overflow-y-auto
         bg-black text-white
         ${isCollapsed ? "w-0 -translate-x-full" : "w-64 translate-x-0"}`}
       >
         <div className="flex h-full w-full flex-col justify-start">
           <div className="flex min-h-[56px] w-64 items-center justify-between px-6 pt-3">
-            <div className="text-xl font-bold text-white">
-              Menu
+            <div className="flex items-center space-x-2 flex-shrink-0 text-white">
+              <Dumbbell className="h-8 w-8 text-white" />
+              <span className="text-2xl font-bold text-white">
+                <Link href="/">GymGenius</Link>
+              </span>
             </div>
             {!isCollapsed && (
               <button
@@ -70,8 +121,26 @@ export default function Sidebar() {
 
           <nav className="z-10 w-full mt-8">
             {navItems.map((item) => (
-              <SidebarLink key={item.href} href={item.href} label={item.label} icon={item.icon} />
+              <SidebarLink
+                key={item.href}
+                href={item.href}
+                label={item.label}
+                icon={item.icon}
+              />
             ))}
+
+            {role === "admin" && (
+              <SidebarLink href="/admin" label="Admin Panel" icon={CodeXml} />
+            )}
+
+            {isLoggedIn && (
+              <button onClick={handleLogout} className="w-full text-left">
+                <div className="relative flex cursor-pointer items-center justify-start px-8 py-3 hover:bg-white/20 transition-colors">
+                  <User className="mr-2 h-5 w-5 text-white" />
+                  <span className="text-white">Logout</span>
+                </div>
+              </button>
+            )}
           </nav>
         </div>
       </div>
