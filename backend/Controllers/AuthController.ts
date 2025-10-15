@@ -3,13 +3,13 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 const JWT_SECRET = process.env.JWT ?? "secret";
-
+import { sendVerificationCode } from "../utils/email";
 
 
 const prisma = new PrismaClient();
 import { Request, Response } from "express";
 export const registerUser = async (req: Request, res: Response): Promise<void> => {
-    const { userName, password, email } = req.body;
+    const { userName, password, email, verificationCode } = req.body;
 
     if (!userName || !password || !email) {
         res.status(400).json({ message: 'All fields are required' });
@@ -28,9 +28,22 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
         if (existingUser) {
             res.status(409).json({ message: 'Username or email already exists' });
         }
+
+        // const emailVerificationToken = await prisma.verificationToken.findFirst({
+        //     where: { token: verificationCode, user: {email} }
+        // });
+        
+        // if (!emailVerificationToken || emailVerificationToken.expiresAt < new Date()) {
+        //     res.status(400).json({ message: 'Invalid or expired verification code' });
+        //     return;
+        // } else {
+        //     await prisma.verificationToken.delete({
+        //         where: { token: verificationCode}
+        //     });
+        // }
         
         const hashedPassword = await bcrypt.hash(password, 10);
-        //const verificationToken = crypto.randomBytes(32).toString('hex');
+        const verificationToken = Math.floor(10000 + Math.random() * 90000).toString();
         const newUser = await prisma.user.create({
             data: {
                 userName,
@@ -38,11 +51,19 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
                 email,
                 isVerified: false,
                 role: 'USER'
-                //verificationToken
             }
         });
 
-        // Send verification email logic here (omitted for brevity)
+        await prisma.verificationToken.create({
+            data: {
+                token: verificationToken,
+                userId: newUser.id,
+                expiresAt: new Date(Date.now() + 10 * 60 * 1000)
+            }
+        });
+
+        await sendVerificationCode(email, verificationToken);
+
 
         res.status(201).json({ message: 'User registered successfully. Please check your email to verify your account.' });
         return;
@@ -96,3 +117,47 @@ export const logoutUser = async (req: Request, res: Response): Promise<void> => 
     res.status(200).json({ message: "Logout successful" });
 }
 
+
+export const verifyEmail = async (req: Request, res: Response): Promise<void> => {
+  const { email, code } = req.body;
+
+  if (!email || !code) {
+    res.status(400).json({ message: "Email and code are required" });
+    return;
+  }
+
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    const storedToken = await prisma.verificationToken.findFirst({
+      where: { token: code, userId: user.id },
+    });
+
+    if (!storedToken) {
+      res.status(400).json({ message: "Invalid verification code" });
+      return;
+    }
+
+    if (storedToken.expiresAt < new Date()) {
+      await prisma.verificationToken.delete({ where: { id: storedToken.id } });
+      res.status(400).json({ message: "Verification code expired" });
+      return;
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { isVerified: true },
+    });
+
+    await prisma.verificationToken.delete({ where: { id: storedToken.id } });
+
+    res.status(200).json({ message: "Email verified successfully" });
+  } catch (error) {
+    console.error("Error verifying email:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

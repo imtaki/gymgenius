@@ -72,7 +72,6 @@ export default function Sidebar() {
     try {
       const res = await api.post("/api/auth/logout", { token });
       if (res.status === 200) {
-        // delete cookies manually
         document.cookie = "token=; path=/; max-age=0;";
         document.cookie = "role=; path=/; max-age=0;";
         setIsLoggedIn(false);
@@ -129,7 +128,7 @@ export default function Sidebar() {
               />
             ))}
 
-            {role === "admin" && (
+            {role === "ADMIN" && (
               <SidebarLink href="/admin" label="Admin Panel" icon={CodeXml} />
             )}
 
