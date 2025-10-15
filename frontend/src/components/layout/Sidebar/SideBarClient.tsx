@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
-import api from "../../app/utils/axios";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   LucideIcon,
@@ -14,6 +13,13 @@ import {
   Dumbbell,
   CodeXml,
 } from "lucide-react";
+import api from "../../../app/utils/axios";
+import getCookie from "../../../lib/getCookie";
+
+interface SidebarClientProps {
+  isLoggedIn: boolean;
+  role: string | null;
+}
 
 interface SidebarLinkProps {
   href: string;
@@ -24,6 +30,7 @@ interface SidebarLinkProps {
 const SidebarLink = ({ href, label, icon: Icon }: SidebarLinkProps) => {
   const pathname = usePathname();
   const isActive = pathname === href;
+  
   return (
     <Link href={href} className="w-full">
       <div
@@ -40,17 +47,9 @@ const SidebarLink = ({ href, label, icon: Icon }: SidebarLinkProps) => {
   );
 };
 
-/** Helper to read a cookie by name */
-function getCookie(name: string): string | null {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
-  return match ? decodeURIComponent(match[2]) : null;
-}
-
-export default function Sidebar() {
+export default function SidebarClient({ isLoggedIn, role }: SidebarClientProps) {
   const [isCollapsed, setIsCollapsed] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [role, setRole] = useState<string | null>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const navItems = [
     { label: "Dashboard", href: "/dashboard", icon: House },
@@ -58,14 +57,7 @@ export default function Sidebar() {
     { label: "Settings", href: "/settings", icon: Settings },
   ];
 
-  useEffect(() => {
-    const token = getCookie("token");
-    const userRole = getCookie("role");
-    setIsLoggedIn(!!token);
-    setRole(userRole);
-  }, []);
-
-  async function handleLogout() {
+   async function handleLogout() {
     const token = getCookie("token");
     if (!token) return;
 
@@ -74,8 +66,7 @@ export default function Sidebar() {
       if (res.status === 200) {
         document.cookie = "token=; path=/; max-age=0;";
         document.cookie = "role=; path=/; max-age=0;";
-        setIsLoggedIn(false);
-        setRole(null);
+        setIsLoggingOut(true);
         window.location.href = "/login";
       }
     } catch (error) {
@@ -133,10 +124,16 @@ export default function Sidebar() {
             )}
 
             {isLoggedIn && (
-              <button onClick={handleLogout} className="w-full text-left">
+              <button 
+                onClick={handleLogout} 
+                className="w-full text-left"
+                disabled={isLoggingOut}
+              >
                 <div className="relative flex cursor-pointer items-center justify-start px-8 py-3 hover:bg-white/20 transition-colors">
                   <User className="mr-2 h-5 w-5 text-white" />
-                  <span className="text-white">Logout</span>
+                  <span className="text-white">
+                    {isLoggingOut ? "Logging out..." : "Logout"}
+                  </span>
                 </div>
               </button>
             )}
