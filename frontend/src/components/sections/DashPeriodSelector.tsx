@@ -7,6 +7,7 @@ export default function DashPeriodSelector() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selectedPeriod, setSelectedPeriod] = useState(searchParams.get('period') || 'week');
+  
 
 
   const handlePeriodChange = (period: string) => {
