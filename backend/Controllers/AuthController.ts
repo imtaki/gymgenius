@@ -9,17 +9,18 @@ import { sendVerificationCode } from "../utils/email";
 const prisma = new PrismaClient();
 import { Request, Response } from "express";
 export const registerUser = async (req: Request, res: Response): Promise<void> => {
-    const { userName, password, email, verificationCode } = req.body;
+    const { username, password, email } = req.body;
 
-    if (!userName || !password || !email) {
+    if (!username || !password || !email) {
         res.status(400).json({ message: 'All fields are required' });
+        return;
     }
 
     try {
         const existingUser = await prisma.user.findFirst({
             where: {
                 OR: [
-                    { userName },
+                    { username },
                     { email }
                 ]
             }
@@ -34,7 +35,7 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
         const verificationToken = Math.floor(10000 + Math.random() * 90000).toString();
         const newUser = await prisma.user.create({
             data: {
-                userName,
+                username,
                 password: hashedPassword,
                 email,
                 isVerified: false,
@@ -79,7 +80,7 @@ export const loginUser= async (req: Request, res: Response): Promise<any> => {
             return res.status(401).json({ message: "Invalid email or password" });
         }
 
-        const accessToken = jwt.sign({ id: user?.id, username: user.userName, role: user.role }, JWT_SECRET, { expiresIn: "1h" });
+        const accessToken = jwt.sign({ id: user?.id, username: user.username, role: user.role }, JWT_SECRET, { expiresIn: "1h" });
 
 
         res.status(200).json({
@@ -87,7 +88,7 @@ export const loginUser= async (req: Request, res: Response): Promise<any> => {
             accessToken,
             user: {
                 id: user?.id,
-                username: user?.userName,
+                username: user?.username,
                 role: user.role,
                 email: user?.email
             }
