@@ -126,8 +126,8 @@ export default function SignUpPage() {
     try {
       const validatedData = signUpSchema.parse(formData);
 
-      const response = await api.post("/api/auth/register", {
-        userName: validatedData.userName,
+      const response = await api.post("/api/register", {
+        name: validatedData.userName,
         email: validatedData.email,
         password: validatedData.password,
       });
@@ -164,7 +164,7 @@ export default function SignUpPage() {
     setVerificationError("");
     setVerificationSuccess(false);
     try {
-      const response = await api.post("/api/auth/verify-email", {
+      const response = await api.post("/api/verify-email", {
         email: formData.email,
         code: verificationCode,
       });
