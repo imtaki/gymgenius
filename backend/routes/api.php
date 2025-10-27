@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ExerciseController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -16,3 +17,7 @@ Route::post('/register', [AuthController::class, 'register']);
 
 // Email
 Route::post('/verify-email', [AuthController::class, 'verifyEmail']);
+
+//Exercise 
+Route::get('/exercise', [ExerciseController::class, 'getExercises']);
+Route::post('/exercise', [ExerciseController::class, 'createExercises']);

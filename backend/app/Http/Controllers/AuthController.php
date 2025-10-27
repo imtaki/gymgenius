@@ -91,7 +91,7 @@ class AuthController extends Controller
             '/',
             null,
             true,
-            true,
+            false,
             false,
             'strict'
         );
@@ -107,7 +107,7 @@ class AuthController extends Controller
             ])->cookie(
                 'jwt_token',
                 null,
-                -1,                // Negative expiration to delete cookie
+                -1, 
                 '/',
                 null,
                 true,
