@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Meal extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'name',
+        'user_id',
         'calories',
         'protein',
         'carbs',
@@ -17,11 +20,12 @@ class Meal extends Model
     protected $casts = [
         'name' => 'string',
         'calories' => 'integer',
+        'protein'=> 'integer',
         'carbs' => 'float',
         'fats' => 'float'
     ];
 
     public function users() {
-        return $this->belongsToMany(User::class, 'meal_user');
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

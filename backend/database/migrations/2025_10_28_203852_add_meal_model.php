@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('meals', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->integer('calories')->nullable();
             $table->integer('protein')->nullable();
             $table->integer('carbs')->nullable();
