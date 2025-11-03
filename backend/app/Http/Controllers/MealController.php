@@ -11,10 +11,10 @@ use Illuminate\Support\Facades\Auth;
 
 class MealController extends Controller
 {
-    public function getMealByUser($id ) {
+    public function getMealByUser($id) {
         try {
             $user = User::findorFail($id);
-            return response()->json($user->meals);
+            return response()->json($user->meals, 200);
         } catch (ModelNotFoundException $e) {
             return response()->json($e->getMessage(), 404);
         }
@@ -22,31 +22,27 @@ class MealController extends Controller
 
     public function getMealById($id) {
         try {
-            $meal = Meal::all()->findOrFail($id);
-            return response()->json($meal);
+            $meal = Meal::findOrFail($id);
+            return response()->json($meal, 200);
         } catch (ModelNotFoundException $e) {
             return response()->json($e->getMessage(), 404);
         }
     }
 
-    public function createMeal(Request $request) {
+    public function createMeal(Request $request, $userId) {
+
+        $user = User::findOrFail($userId);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'user_id' => 'required|exists:users,id',
             'calories' => 'required|integer',
             'protein' => 'required|integer',
             'carbs' => 'required|integer',
-            'fat' => 'required|integer'
+            'fats' => 'required|integer'
         ]);
         try {
-            $meal = Auth::user()->Meal::create([
-                'name' => $validated['name'],
-                'user_id' => $validated['user_id'],
-                'calories' => $validated['calories'],
-                'protein' => $validated['protein'],
-                'carbs' => $validated['carbs'],
-                'fat' => $validated['fats']
-            ]);
+            $meal = $user->meals()->create($validated);
         } catch (\Exception $e) {
             return response()->json($e->getMessage(), 500);
         }
@@ -57,13 +53,12 @@ class MealController extends Controller
     }
 
     public function deleteMeal($id) {
-        $meal = Meal::all()->findOrFail($id);
         try {
+            $meal = Meal::findOrFail($id);
             $meal->delete();
         } catch (\Exception $e) {
             return response()->json($e->getMessage(), 500);
         }
-
         return response()->json("Meal deleted successfully", 204);
     }
 }
