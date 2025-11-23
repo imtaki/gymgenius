@@ -4,8 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, X, Loader2, Save } from "lucide-react";
 import axios from "axios";
+import { createMealForUser } from "../../app/api/mealService";
 
-export default function AddMealModal({ userId }: { userId: string }) {
+export default function AddMealModal({ userId }: { userId: string}) {
     const [isOpen, setIsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
@@ -33,9 +34,9 @@ export default function AddMealModal({ userId }: { userId: string }) {
                 fats: Number(formData.fats),
             };
 
-            const res = await axios.post(`http://localhost:8000/api/users/${userId}/meals`, payload);
+            const res = await createMealForUser(userId, payload);
 
-            if (res.status === 201) {
+            if (res) {
                 setFormData({ name: "", calories: "", protein: "", carbs: "", fats: "", category: "breakfast"});
                 setIsOpen(false);
                 router.refresh(); 
