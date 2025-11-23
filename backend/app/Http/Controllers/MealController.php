@@ -8,57 +8,61 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\MealRequest;
+use App\Services\MealService;
+use Illuminate\Support\Facades\Gate;
+
 
 class MealController extends Controller
 {
-    public function getMealByUser($id) {
-        try {
-            $user = User::findorFail($id);
-            return response()->json($user->meals, 200);
-        } catch (ModelNotFoundException $e) {
-            return response()->json($e->getMessage(), 404);
-        }
+    public function __construct(MealService $mealService) {
+        $this->mealService = $mealService;
     }
 
-    public function getMealById($id) {
-        try {
-            $meal = Meal::findOrFail($id);
-            return response()->json($meal, 200);
-        } catch (ModelNotFoundException $e) {
-            return response()->json($e->getMessage(), 404);
+
+
+    public function index(Request $request, $userId)
+    {
+        $user = Auth::user();
+        
+        if ($user->id != $userId) {
+            return response()->json(['error' => 'Unauthorized'], 403);
         }
+
+        $meals = $this->mealService->getMealByUser($userId);
+        return response()->json($meals, 200);
     }
 
-    public function createMeal(Request $request, $userId) {
-
-        $user = User::findOrFail($userId);
-
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'category' => 'required|in:breakfast,lunch,dinner,snacks',
-            'calories' => 'required|integer',
-            'protein' => 'required|integer',
-            'carbs' => 'required|integer',
-            'fats' => 'required|integer'
-        ]);
-        try {
-            $meal = $user->meals()->create($validated);
-        } catch (\Exception $e) {
-            return response()->json($e->getMessage(), 500);
-        }
-        return response()->json([
-            'message' => 'Meal registered successfully',
-            'meal' => $meal,
-        ], 201);
+    public function show($mealId) {
+        $meal = $this->mealService->getMealById($id);
+        return response()->json($meal, 200);
     }
 
-    public function deleteMeal($id) {
-        try {
-            $meal = Meal::findOrFail($id);
-            $meal->delete();
-        } catch (\Exception $e) {
-            return response()->json($e->getMessage(), 500);
-        }
-        return response()->json("Meal deleted successfully", 204);
+    public function store(MealRequest $request, $userId) {
+        Gate::authorize('create', [Meal::class, $userId]);
+        $meal = $this->mealService->createMeal($userId, $request->validated());
+        // if (!$meal["success"]) {
+        //     return response()->json(['error' => $meal["message"]], 409);
+        // }
+        return response()->json($meal, 201);
     }
+
+    public function update(MealRequest $request, $mealId) {
+        Gate::authorize('update', Meal::class);
+        $meal = $this->mealService->updateMeal($mealId, $request);
+        if (!$data["success"]) {
+            return response()->json(['error' => $data["message"]], 409);
+        }
+        return response()->json($meal, 200);
+    }
+
+
+
+    public function destroy($mealId) {
+        $meal = Meal::findOrFail($mealId);
+        Gate::authorize('delete', $meal);
+        $meal->delete();
+        return response()->json(["message" => "Meal deleted successfully"], 200);
+    }
+
 }

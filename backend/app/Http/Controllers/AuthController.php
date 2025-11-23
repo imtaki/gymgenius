@@ -6,7 +6,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\WelcomeMail;;
+use App\Mail\WelcomeMail;
 
 class AuthController extends Controller
 {
@@ -29,7 +29,6 @@ class AuthController extends Controller
 
             $token = JWTAuth::fromUser($user);
 
-
             Mail::to($user->email)->send(new WelcomeMail($user, $code));
 
         } catch (JWTException $e) {
@@ -38,19 +37,9 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'User registered successfully',
-            'user' => $user
-        ])->cookie(
-            'jwt_token',
-            $token,
-            60 * 24,           // 1 day
-            '/',
-            null,
-            true,              // Secure
-            true,              // HttpOnly
-            false,
-            'strict'          // SameSite
-        );
-
+            'user' => $user,
+            'token' => $token   
+        ]);
     }
 
     public function login(Request $request)
@@ -67,74 +56,32 @@ class AuthController extends Controller
 
         $user = auth()->user();
 
-        $response = response()->json([
+        return response()->json([
             'message' => 'Login successful',
-            'user' => $user
-       ]);
-
-        $response->cookie(
-            'jwt_token',
-            $token,
-            60 * 24,           // 1 day
-            '/',
-            null,
-            true,              // Secure
-            true,              // HttpOnly
-            false,
-            'strict'          // SameSite
-        );
-
-        $response->cookie(
-            'role',
-            $user->role,
-            config('jwt.ttl'),
-            '/',
-            null,
-            true,
-            false,
-            false,
-            'strict'
-        );
-
-        $response->cookie(
-            'userId',
-            $user->id,
-            config('jwt.ttl'),
-            '/',
-            null,
-            true,
-            false,
-            false,
-            'strict'
-        );
-
-
-        return $response;
+            'id' => $user->id,
+            'token' => $token   
+        ]);
     }
 
     public function logout(Request $request)
     {
-        JWTAuth::invalidate(JWTAuth::getToken());
-        return response()->json([
-                'message' => 'Successfully logged out'
-            ])->cookie(
-                'jwt_token',
-                null,
-                -1,
-                '/',
-                null,
-                true,
-                true,
-                false,
-                'strict'
-            );
+        try {
+            JWTAuth::invalidate(JWTAuth::getToken());
+            return response()->json(['message' => 'Successfully logged out']);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Failed to logout, token invalid'], 500);
+        }
     }
 
     public function getUser(Request $request)
     {
-        return response()->json($request->user());
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            return response()->json($user);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Token is invalid or expired'], 401);
+        }
     }
-
 
     public function verifyEmail(Request $request)
     {
@@ -165,6 +112,4 @@ class AuthController extends Controller
             return response()->json(['error' => 'Invalid verification code.'], 400);
         }
     }
-
-
 }
