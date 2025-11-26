@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ExerciseController;
+use App\Http\Controllers\UserSettingsController;
 
 
 
@@ -37,6 +38,12 @@ Route::middleware(['auth:api'])->group(function () {
         Route::put('/{id}', [MealController::class, 'update']);
         Route::delete('/{id}', [MealController::class, 'destroy']);
     });
+
+    Route::prefix('settings')->group(function () {
+        Route::get('/user/{userId}', [UserSettingsController::class, 'index']);
+        Route::post('/user/{userId}', [UserSettingsController::class, 'store']);
+        Route::put('/user/{userId}', [UserSettingsController::class, 'update']);
+    });
     
     // Exercise Routes
     Route::prefix('exercises')->group(function () {
@@ -44,4 +51,5 @@ Route::middleware(['auth:api'])->group(function () {
         Route::post('/', [ExerciseController::class, 'createExercises']);
         Route::get('/muscle-groups', [ExerciseController::class, 'getMuscleGroups']);
     });
+
 });
