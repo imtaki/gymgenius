@@ -139,7 +139,6 @@ export default function NutritionClient() {
             try {
                 setLoading(true);
                 const data = await getMealsByUserId(id);
-                console.log(data);
                 setMeals(data);
             } catch (error) {
                 console.error("Failed to fetch meals:", error);
