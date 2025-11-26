@@ -1,4 +1,4 @@
-export default interface Meal {
+export interface Meal {
     id: string;
     name: string;
     calories: number;
@@ -7,4 +7,11 @@ export default interface Meal {
     fats: number;
     category: 'breakfast' | 'lunch' | 'dinner' | 'snacks';
     image?: string;
+}
+
+export interface DecodedToken {
+    id: number;
+    username: string;
+    role: string;
+    email?: string;
 }
