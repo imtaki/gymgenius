@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LucideIcon,
   Menu,
@@ -13,7 +13,8 @@ import {
   Dumbbell,
   CodeXml,
 } from "lucide-react";
-import api from "../../app/api/axios";
+import { getUser, logout } from "../../app/api/authService";
+import { jwtDecode } from "jwt-decode";
 
 interface SidebarLinkProps {
   href: string;
@@ -44,21 +45,41 @@ const SidebarLink = ({ href, label, icon: Icon }: SidebarLinkProps) => {
 export default function SidebarClient() {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [role, setRole] = useState<string | null>(null);
+  const [role, setRole] = useState("user");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
 
   const navItems = [
     { label: "Dashboard", href: "/dashboard", icon: House },
     { label: "Settings", href: "/settings", icon: User },
   ];
 
+  useEffect(() => {
+    async function fetchUserRole() {
+      try {
+        const res = await getUser();
+        const decoded = jwtDecode<{ role: string }>(res.token).role;
+
+        if (res) {
+          setRole(decoded);
+          setIsLoggedIn(true);
+        } else {
+          setIsLoggedIn(false);
+        }
+      } catch (error) {
+        console.error("Failed to fetch user role:", error);
+        setIsLoggedIn(false);
+      } 
+    }
+
+    fetchUserRole();
+  }, []);
+
   async function handleLogout() {
     try {
-      const res = await api.post("/api/logout");
-      if (res.status === 200) {
-        setIsLoggingOut(true);
-        window.location.href = "/login";
-      }
+      await logout();
+      setIsLoggingOut(true);
+      router.push("/login");
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -109,7 +130,7 @@ export default function SidebarClient() {
               />
             ))}
 
-            {role === "admin" && (
+            {role == "admin" && (
               <SidebarLink href="/admin" label="Admin Panel" icon={CodeXml} />
             )}
 
