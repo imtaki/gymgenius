@@ -4,7 +4,7 @@ import BackButton from "../../../components/ui/backbutton";
 import { jwtDecode } from "jwt-decode";
 import { User, Target, Lock, Save, Loader2 } from 'lucide-react';
 import { getUser } from "../../api/authService";
-import { getUserSettingsById } from "../../api/userSettingsService";
+import { getUserSettingsById, updateUserSettings } from "../../api/userSettingsService";
 import { DecodedToken } from "../../../types/types";
 
 
@@ -13,11 +13,12 @@ export default function ProfilePage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [profileData, setProfileData] = useState({
-        weight: '',
-        height: '',
-        caloricGoal: '',
-        goalWeight: '',
-        currentGoal: ''
+        age: 0,
+        height: 0,
+        caloric_goal: 0,
+        goal_type: 'maintaining',
+        current_weight: 0,
+        target_weight: 0
     });
     const [passwordData, setPasswordData] = useState({
         currentPassword: '',
@@ -53,13 +54,13 @@ export default function ProfilePage() {
             try {
                 setLoading(true);
                 const settings = await getUserSettingsById(id);
-                console.log(settings);
                 setProfileData({
-                    weight: settings.current_weight,
-                    height: settings.height,
-                    caloricGoal: settings.caloric_goal,
-                    goalWeight: settings.target_weight,
-                    currentGoal: settings.current_goal,
+                    current_weight: parseFloat(settings.current_weight) || 0,
+                    age: parseInt(settings.age) || 0,
+                    height: parseFloat(settings.height) || 0,
+                    caloric_goal: parseInt(settings.caloric_goal) || 0,
+                    target_weight: parseFloat(settings.target_weight) || 0,
+                    goal_type: settings.goal_type || 'maintaining',
                 });
             } catch (error) {
                 console.error("Failed to fetch user settings:", error);
@@ -72,7 +73,27 @@ export default function ProfilePage() {
         fetchUserSettings();
     }, [user]);
 
-    const handleSaveCaloricGoal = async () => {
+    const handleSaveProfile = async () => {
+        try {
+            setSaving(true);
+            const user = getUser();
+            const id = user?.id;
+            
+            console.log('Sending data:', profileData)
+            
+            const res = await updateUserSettings(id, profileData);
+
+            if (res) {
+                setSuccessMessage('Profile updated successfully.');
+                setErrorMessage('');
+            }
+        } catch (error) {
+            console.error('Error response:', error.response?.data); // See what backend says
+            setErrorMessage('Failed to update profile. Please try again.');
+            setSuccessMessage('');
+        } finally {
+            setSaving(false);
+        }
     };
 
     const handlePasswordChange = async () => {
@@ -144,8 +165,7 @@ export default function ProfilePage() {
                     </div>
                 </div>
 
-                {/* Fitness Profile Section */}
-                <div className="mb-8">
+                 <div className="mb-8">
                     <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Fitness Profile</h2>
 
                     <div className="bg-zinc-800/50 border border-zinc-800/50 rounded-xl p-6">
@@ -157,8 +177,8 @@ export default function ProfilePage() {
                                 <input
                                     type="number"
                                     step="0.1"
-                                    value={profileData.weight}
-                                    onChange={(e) => setProfileData({...profileData, weight: e.target.value})}
+                                    value={profileData.current_weight}
+                                    onChange={(e) => setProfileData({...profileData, current_weight: parseFloat(e.target.value) || 0})}
                                     className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-zinc-600 transition-colors"
                                     placeholder="75.0"
                                 />
@@ -172,9 +192,22 @@ export default function ProfilePage() {
                                     type="number"
                                     step="0.1"
                                     value={profileData.height}
-                                    onChange={(e) => setProfileData({...profileData, height: e.target.value})}
+                                    onChange={(e) => setProfileData({...profileData, height: parseFloat(e.target.value) || 0})}
                                     className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-zinc-600 transition-colors"
                                     placeholder="175.0"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-400 mb-2">
+                                    Age
+                                </label>
+                                <input
+                                    type="number"
+                                    value={profileData.age}
+                                    onChange={(e) => setProfileData({...profileData, age: parseInt(e.target.value) || 0})}
+                                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-zinc-600 transition-colors"
+                                    placeholder="25"
                                 />
                             </div>
 
@@ -185,8 +218,8 @@ export default function ProfilePage() {
                                 <input
                                     type="number"
                                     step="0.1"
-                                    value={profileData.goalWeight}
-                                    onChange={(e) => setProfileData({...profileData, goalWeight: e.target.value})}
+                                    value={profileData.target_weight}
+                                    onChange={(e) => setProfileData({...profileData, target_weight: parseFloat(e.target.value) || 0})}
                                     className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-zinc-600 transition-colors"
                                     placeholder="70.0"
                                 />
@@ -197,8 +230,8 @@ export default function ProfilePage() {
                                     Current Goal
                                 </label>
                                 <select
-                                    value={profileData.currentGoal}
-                                    onChange={(e) => setProfileData({...profileData, currentGoal: e.target.value})}
+                                    value={profileData.goal_type}
+                                    onChange={(e) => setProfileData({...profileData, goal_type: e.target.value})}
                                     className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-zinc-600 transition-colors appearance-none cursor-pointer"
                                 >
                                     <option value="cutting">Cutting</option>
@@ -214,8 +247,8 @@ export default function ProfilePage() {
                             </label>
                             <input
                                 type="number"
-                                value={profileData.caloricGoal}
-                                onChange={(e) => setProfileData({...profileData, caloricGoal: e.target.value})}
+                                value={profileData.caloric_goal}
+                                onChange={(e) => setProfileData({...profileData, caloric_goal: parseInt(e.target.value) || 0})}
                                 className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-zinc-600 transition-colors"
                                 placeholder="2000"
                             />
@@ -225,7 +258,7 @@ export default function ProfilePage() {
                         </div>
 
                         <button
-                             // onClick={handleSaveProfile}
+                             onClick={handleSaveProfile}
                             disabled={saving}
                             className="w-full bg-white text-black px-4 py-2.5 rounded-lg font-medium hover:bg-gray-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
@@ -244,7 +277,6 @@ export default function ProfilePage() {
                     </div>
                 </div>
 
-                {/* Security Section */}
                 <div className="mb-8">
                     <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Security</h2>
 
