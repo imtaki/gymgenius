@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, X, Loader2, Save } from "lucide-react";
-import axios from "axios";
 import { createMealForUser } from "../../app/api/mealService";
 
 export default function AddMealModal({ userId }: { userId: string}) {
