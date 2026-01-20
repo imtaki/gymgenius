@@ -9,14 +9,11 @@ use App\Http\Controllers\UserSettingsController;
 
 
 
-// Public Authentication Routes
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/verify-email', [AuthController::class, 'verifyEmail']);
 
-Route::apiResource('meals', MealController::class)->middleware('auth:api');
 
-// Protected Routes (Require Authentication)
 Route::middleware(['auth:api'])->group(function () {
     
     // Auth Routes
@@ -45,10 +42,13 @@ Route::middleware(['auth:api'])->group(function () {
     });
     
     // Exercise Routes
-    Route::prefix('exercises')->group(function () {
-        Route::get('/', [ExerciseController::class, 'getExercises']);
-        Route::post('/', [ExerciseController::class, 'createExercises']);
-        Route::get('/muscle-groups', [ExerciseController::class, 'getMuscleGroups']);
+   Route::prefix('exercises')->group(function () {
+        Route::get('/', [ExerciseController::class, 'index']);
+        Route::post('/', [ExerciseController::class, 'store']);
+        Route::get('/{id}', [ExerciseController::class, 'show']);
+        Route::put('/{id}', [ExerciseController::class, 'update']);
+        Route::delete('/{id}', [ExerciseController::class, 'destroy']);
+        Route::get('/muscle-groups', [ExerciseController::class, 'muscleGroups']);
     });
 
 });
