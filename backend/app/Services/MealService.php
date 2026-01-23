@@ -1,53 +1,65 @@
 <?php
 
 namespace App\Services;
+
 use App\Models\User;
 use App\Models\Meal;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Cache;
 
-class MealService {
-
-    public function getMealByUser($id) {
-        try {
-            $user = User::FindOrFail($id);
-            return $user->meals;
-        } catch (ModelNotFoundException $e) {
-            return response()->json($e->getMessage(), 404);
-        }
+class MealService 
+{
+    /**
+     * Get all meals for a user 
+     */
+    public function getMealByUser($id) 
+    {
+        return Cache::remember("user_{$id}_meals", 1800, function () use ($id) {
+            $user = User::findOrFail($id);
+            return $user->meals; 
+        });
     }
 
-     public function getMealById($id) {
-        try {
+    /**
+     * Get specific meal by ID 
+     */
+    public function getMealById($id) 
+    {
+        return Cache::remember("meal_{$id}", 3600, function () use ($id) {
             return Meal::findOrFail($id);
-        } catch (ModelNotFoundException $e) {
-            return response()->json($e->getMessage(), 404);
-        }
+        });
     }
 
+    /**
+     * Create meal - Observer clears cache automatically
+     */
     public function createMeal($userId, $data): Meal
     {
         try {
             $user = User::findOrFail($userId);
             return $user->meals()->create($data);
-        } catch (ModelNotFoundException $e) {
-            throw new ModelNotFoundException("User not found with ID: {$userId}");
         } catch (\Exception $e) {
             throw new \Exception("Failed to create meal: {$e->getMessage()}");
         }
     }
 
-    public function updateMeal($mealId, $data) {
+    /**
+     * Update meal - Observer clears cache automatically
+     */
+    public function updateMeal($mealId, $data) 
+    {
         try {
             $meal = Meal::findOrFail($mealId);
             $meal->update($data);
             return $meal;
         } catch (ModelNotFoundException $e) {
             throw new ModelNotFoundException("Meal not found with ID: {$mealId}");
-        } catch (\Exception $e) {
-            throw new \Exception("Failed to update meal: {$e->getMessage()}");
         }
     }
 
+    /**
+     * Delete meal - Observer clears cache automatically
+     */
     public function deleteMeal($mealId)
     {
         try {
@@ -55,9 +67,6 @@ class MealService {
             return $meal->delete();
         } catch (ModelNotFoundException $e) {
             throw new ModelNotFoundException("Meal not found with ID: {$mealId}");
-        } catch (\Exception $e) {
-            throw new \Exception("Failed to delete meal: {$e->getMessage()}");
         }
     }
-
 }

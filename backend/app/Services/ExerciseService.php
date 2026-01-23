@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Exercise;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Cache;
 
 class ExerciseService
 {
@@ -12,11 +13,13 @@ class ExerciseService
      */
     public function getExercisesByUser($userId)
     {
+        return Cache::remember("user_{$userId}_exercises", now()->addMinutes(30), function () use ($userId) {
         try {
             return Exercise::where('user_id', $userId)->get();
         } catch (\Exception $e) {
             throw new \Exception("Failed to retrieve exercises: {$e->getMessage()}");
         }
+        });
     }
 
     /**
@@ -24,11 +27,13 @@ class ExerciseService
      */
     public function getExerciseById($id)
     {
-        try {
-            return Exercise::findOrFail($id);
-        } catch (ModelNotFoundException $e) {
-            throw new ModelNotFoundException("Exercise not found with ID: {$id}");
-        }
+        return Cache::remember("exercise_{$id}", now()->addHours(1), function () use ($id) {
+            try {
+                return Exercise::findOrFail($id);
+            } catch (ModelNotFoundException $e) {
+                throw new ModelNotFoundException("Exercise not found with ID: {$id}");
+            }
+        });
     }
 
     /**
@@ -38,7 +43,11 @@ class ExerciseService
     {
         try {
             $data['user_id'] = $userId;
-            return Exercise::create($data);
+            $exercise = Exercise::create($data);
+
+            Cache::forget("user_{$userId}_exercises");
+
+            return $exercise;
         } catch (\Exception $e) {
             throw new \Exception("Failed to create exercise: {$e->getMessage()}");
         }
@@ -52,6 +61,10 @@ class ExerciseService
         try {
             $exercise = Exercise::findOrFail($exerciseId);
             $exercise->update($data);
+
+            Cache::forget("exercise_{$exerciseId}");
+            Cache::forget("user_{$exercise->user_id}_exercises");
+
             return $exercise;
         } catch (ModelNotFoundException $e) {
             throw new ModelNotFoundException("Exercise not found with ID: {$exerciseId}");
@@ -67,7 +80,16 @@ class ExerciseService
     {
         try {
             $exercise = Exercise::findOrFail($exerciseId);
-            return $exercise->delete();
+            $userId = $exercise->user_id;
+            
+            $deleted = $exercise->delete();
+
+            if ($deleted) {
+                Cache::forget("exercise_{$exerciseId}");
+                Cache::forget("user_{$userId}_exercises");
+            }
+
+            return $deleted;
         } catch (ModelNotFoundException $e) {
             throw new ModelNotFoundException("Exercise not found with ID: {$exerciseId}");
         } catch (\Exception $e) {
