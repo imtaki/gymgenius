@@ -32,6 +32,7 @@ export enum equipment {
 }
 
 export interface Exercise {
+    id: string;
     name: string;
     muscleGroup: muscleGroup;
     secondaryMuscles?: string;
