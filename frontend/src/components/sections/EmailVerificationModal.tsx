@@ -87,11 +87,10 @@ export default function EmailVerificationModal({ isOpen, onClose, email, onSucce
     }, 1500);
     return () => clearTimeout(timer);
   }
-}, [success, onSuccess]);
+}, [success]);
 
   if (!isOpen) return null;
 
-   // TODO: Make redirect work 
   const handleVerifyCode = async () => {
     setIsVerifying(true);
     setError("");
@@ -99,6 +98,9 @@ export default function EmailVerificationModal({ isOpen, onClose, email, onSucce
       const response = await verifyEmailCode(email, verificationCode);
       if (response.status === 200) {
         setSuccess(true);
+        setTimeout(() => {
+          onSuccess(); 
+      }, 1500);
       }
     } catch (err: any) {
       setError(err.response?.data?.message || "Verification failed. Please try again.");
