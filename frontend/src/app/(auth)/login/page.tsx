@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Dumbbell, Eye, EyeOff, Mail, Lock } from "lucide-react";
 import Link from "next/link";
-import { login as loginService } from "../../api/authService";
+import { loginUser } from "../../api/authService";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
@@ -26,7 +26,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const data  = await loginService(email, password);
+      const data  = await loginUser(email, password);
       if (data) {
         router.push("/dashboard");
       } else {
