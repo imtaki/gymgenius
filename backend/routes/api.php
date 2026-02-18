@@ -21,6 +21,14 @@ Route::middleware(['auth:api'])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/user', [AuthController::class, 'getUser']);
     });
+
+    Route::prefix('users')->group(function () {
+        Route::get('/count', [UserController::class, 'indexUserCount']);
+        Route::get('/meal-logs-count', [UserController::class, 'indexMealLogs']);
+    });
+
+
+
     
     // Role Check Route
     Route::middleware('role.check')->get('/role-check', function (Request $request) {
