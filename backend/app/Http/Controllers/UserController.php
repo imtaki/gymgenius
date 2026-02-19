@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Services\UserService;
 
 
 class UserController extends Controller
@@ -13,22 +14,21 @@ class UserController extends Controller
     }
     
     /**
-     * Get User count and for admin dashboard, Cached
+     * Get User data and for admin dashboard, Cached, User count + Meal logs count
      */
-    public function indexUserCount()
+    public function indexUserData()
     {
-        return response()->json([
-            'user_count' => $this->userService->getUserCount(),
-        ], 200);
+        return response()->json($this->userService->getUserDataCount(), 200);
     }
 
-     /**
-     * Get meal logs count and for admin dashboard, Cached
+    /**
+     * Get Recent users, SELECT id, name, email, created_at FROM users ORDER BY created_at DESC LIMIT 5
+     * TODO: Implement this
      */
-    public function indexMealLogs() 
-    {
-        return response()->json([
-            'meal_logs_count' => $this->userService->getUserMealLogsCount(),
-        ], 200);
-    }
+        public function indexRecentUsers()
+        {
+            return response()->json($this->userService->getRecentUsers(), 200);
+        }
+
+
 }

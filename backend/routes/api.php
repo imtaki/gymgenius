@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\UserSettingsController;
+use App\Http\Controllers\UserController;
 
 
 
@@ -23,8 +24,7 @@ Route::middleware(['auth:api'])->group(function () {
     });
 
     Route::prefix('users')->group(function () {
-        Route::get('/count', [UserController::class, 'indexUserCount']);
-        Route::get('/meal-logs-count', [UserController::class, 'indexMealLogs']);
+        Route::get('/data/count', [UserController::class, 'indexUserData']);
     });
 
 
