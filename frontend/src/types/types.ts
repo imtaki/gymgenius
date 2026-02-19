@@ -15,3 +15,8 @@ export interface DecodedToken {
     role: string;
     email?: string;
 }
+
+export interface StatsData {
+    user_count: number;
+    meal_logs_count: number;
+}
