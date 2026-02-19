@@ -1,8 +1,9 @@
+"use client";
 import { Dumbbell } from "lucide-react";
 import { ChartsSection } from "./ChartSection";
 import { SectionHeader } from "./ui-elements";
-import { PLAN_COLOR, AVATAR_COLORS } from "../../../lib/admin/adminDataConstants";;
-import { USERS, WORKOUTS } from "../../../lib/admin/adminMockData";;
+import { PLAN_COLOR, AVATAR_COLORS } from "../../../lib/admin/adminDataConstants";
+import { USERS, WORKOUTS } from "../../../lib/admin/adminMockData";
 
 export function OverviewTab() {
   return (

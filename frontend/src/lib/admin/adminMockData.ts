@@ -1,11 +1,3 @@
-import { Users, Dumbbell, UtensilsCrossed, CreditCard } from "lucide-react";
-
-export const STATS = [
-  { label: "Total Users",          value: "12,847", change: "+8.2%",  up: true,  icon: Users,           color: "from-violet-500 to-purple-600" },
-  { label: "Active Subscriptions", value: "4,231",  change: "+12.5%", up: true,  icon: CreditCard,      color: "from-emerald-500 to-teal-600"  },
-  { label: "Workouts Logged",      value: "89,204", change: "+3.1%",  up: true,  icon: Dumbbell,        color: "from-orange-500 to-red-500"    },
-  { label: "Meal Logs Today",      value: "3,109",  change: "-1.4%",  up: false, icon: UtensilsCrossed, color: "from-sky-500 to-blue-600"      },
-];
 
 export const USERS = [
   { id: 1, name: "Jordan Mitchell", email: "jordan@example.com", plan: "Pro",   status: "active",    joined: "Jan 12, 2025", workouts: 142, avatar: "JM" },
