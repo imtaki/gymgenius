@@ -20,3 +20,10 @@ export interface StatsData {
     user_count: number;
     meal_logs_count: number;
 }
+
+export interface RecentUsers {
+    id: number;
+    name: string;
+    email: string;
+    created_at: string;
+}
