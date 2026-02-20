@@ -1,9 +1,12 @@
 <?php
 
 namespace App\Services;
+
 use App\Models\DailyLog;
 use Carbon\Carbon;
 use App\Models\User;
+use App\Models\UserSettings;
+
 
 
 class DailyLogService 
@@ -13,15 +16,30 @@ class DailyLogService
      */
     public function getDailyLogByUserAndDate($userId, $date) 
     {
-        $date = $dateString ? Carbon::parse($dateString)->toDateString() : now()->toDateString();
+        $formattedDate = $date ? Carbon::parse($date)->toDateString() : now()->toDateString();
+        $caloricGoal = UserSettings::where('user_id', $userId)->first()?->caloric_goal ?? 2000; 
 
         return DailyLog::firstOrCreate(
-            ['user_id' => $userId, 'date' => $date],
-            ['calorie_goal' => 3000] 
+            ['user_id' => $userId, 'date' => $formattedDate],
+            ['calorie_goal' => $caloricGoal] 
         );
         
     }
 
-    // TODO: Add frontend support for daily log updates + plus history button last couple days or so
+    public function getWeeklyHistory($userId) 
+    {
+        $sevenDaysAgo = Carbon::now()->subDays(7)->toDateString();
+        
+        return DailyLog::where('user_id', $userId)
+            ->where('date', '>=', $sevenDaysAgo)
+            ->orderBy('date', 'desc')
+            ->with('meals')
+            ->get();
+    }
+
+    public function getTodayLog($userId) 
+    {
+        return $this->getDailyLogByUserAndDate($userId, now()->toDateString());
+    }
 
 }

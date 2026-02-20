@@ -7,6 +7,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\UserSettingsController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\DailyLogController;
 
 
 
@@ -25,6 +26,7 @@ Route::middleware(['auth:api'])->group(function () {
 
     Route::prefix('users')->group(function () {
         Route::get('/data/count', [UserController::class, 'indexUserData']);
+        Route::get('/data/recent', [UserController::class, 'indexRecentUsers']);
     });
 
 
@@ -42,6 +44,12 @@ Route::middleware(['auth:api'])->group(function () {
         Route::post('/user/{userId}', [MealController::class, 'store']);
         Route::put('/{id}', [MealController::class, 'update']);
         Route::delete('/{id}', [MealController::class, 'destroy']);
+    });
+
+    Route::prefix('daily-goals')->group(function () {
+        Route::get('/user/{userId}/today', [DailyLogController::class, 'today']);
+        Route::get('/user/{userId}/weekly', [DailyLogController::class, 'weekly']);
+        Route::get('/user/{userId}/date/{date}', [DailyLogController::class, 'byDate']);
     });
 
     Route::prefix('settings')->group(function () {

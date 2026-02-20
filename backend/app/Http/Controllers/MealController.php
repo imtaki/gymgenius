@@ -10,13 +10,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\MealRequest;
 use App\Services\MealService;
+use App\Services\DailyLogService;
 use Illuminate\Support\Facades\Gate;
 
 
 class MealController extends Controller
 {
-    public function __construct(MealService $mealService) {
+    public function __construct(MealService $mealService, DailyLogService $dailyLogService) {
         $this->mealService = $mealService;
+        $this->dailyLogService = $dailyLogService;
     }
 
 
@@ -44,6 +46,7 @@ class MealController extends Controller
         // if (!$meal["success"]) {
         //     return response()->json(['error' => $meal["message"]], 409);
         // }
+        
         return response()->json($meal, 201);
     }
 

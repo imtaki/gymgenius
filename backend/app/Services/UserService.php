@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Models\Meal;
+use App\Models\WorkoutLog;
 use Illuminate\Support\Facades\Cache;
 
 class UserService 
@@ -18,6 +19,7 @@ class UserService
             return [
                 'user_count' => (int) User::count(),
                 'meal_logs_count' => (int) Meal::count(),
+                // 'workout_logs_count' => (int) WorkoutLog::count(), // Future implementation in future when workout logs are added
             ];
         });
 
@@ -36,8 +38,17 @@ class UserService
         return 0;
     }
 
-
-
-
+    /**
+     * Get Recent users
+     */
+    public function getRecentUsers(): array 
+    {
+    return Cache::remember('recent_users_list', 3600, function () {
+        return User::orderBy('created_at', 'desc')
+                    ->take(5)
+                    ->get(['id', 'name', 'email', 'created_at'])
+                    ->toArray();
+            });
+    }
 
 }
