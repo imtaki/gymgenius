@@ -14,6 +14,8 @@ export const WORKOUTS = [
   { id: 3, name: "HIIT Cardio Burn",  category: "Cardio",      duration: "20 min", difficulty: "Hard",   users: 3874, rating: 4.6 },
   { id: 4, name: "Core & Abs Focus",  category: "Strength",    duration: "25 min", difficulty: "Medium", users: 1892, rating: 4.5 },
   { id: 5, name: "Lower Body Power",  category: "Strength",    duration: "50 min", difficulty: "Medium", users: 2108, rating: 4.7 },
+  { id: 6, name: "Full Body Burn",    category: "Cardio",      duration: "40 min", difficulty: "Hard",   users: 1520, rating: 4.9 },
+  { id: 7, name: "Yoga & Stretching", category: "Flexibility", duration: "35 min", difficulty: "Easy",   users: 3201, rating: 4.8 },
 ];
 
 export const MEALS = [
