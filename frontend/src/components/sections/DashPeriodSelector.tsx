@@ -3,31 +3,31 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+const PERIODS = ['week', 'month', 'year'] as const;
+
 export default function DashPeriodSelector() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [selectedPeriod, setSelectedPeriod] = useState(searchParams.get('period') || 'week');
-  
+  const [selected, setSelected] = useState(searchParams.get('period') || 'week');
 
-
-  const handlePeriodChange = (period: string) => {
-    setSelectedPeriod(period);
+  const handleChange = (period: string) => {
+    setSelected(period);
     router.push(`/dashboard?period=${period}`);
   };
 
   return (
-    <div className="flex gap-2">
-      {['week', 'month', 'year'].map((period) => (
+    <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 rounded-xl p-1">
+      {PERIODS.map((period) => (
         <button
           key={period}
-          onClick={() => handlePeriodChange(period)}
-          className={`px-4 py-2 rounded-lg font-medium transition-all ${
-            selectedPeriod === period
-              ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
-              : 'bg-white text-slate-900 hover:bg-slate-50 border border-slate-200'
+          onClick={() => handleChange(period)}
+          className={`relative px-4 py-1.5 rounded-lg text-xs font-semibold tracking-widest uppercase transition-all duration-200 ${
+            selected === period
+              ? 'bg-lime-400 text-zinc-900 shadow-lg shadow-lime-400/20'
+              : 'text-zinc-500 hover:text-zinc-300'
           }`}
         >
-          {period.charAt(0).toUpperCase() + period.slice(1)}
+          {period}
         </button>
       ))}
     </div>

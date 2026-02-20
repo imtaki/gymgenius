@@ -9,12 +9,14 @@ import {
   X,
   House,
   User,
-  Settings,
   Dumbbell,
   CodeXml,
+  LogOut,
 } from "lucide-react";
 import { getUser, logout } from "../../app/api/authService";
 import { jwtDecode } from "jwt-decode";
+
+
 
 interface SidebarLinkProps {
   href: string;
@@ -22,25 +24,33 @@ interface SidebarLinkProps {
   icon: LucideIcon;
 }
 
-const SidebarLink = ({ href, label, icon: Icon }: SidebarLinkProps) => {
+
+
+function SidebarLink({ href, label, icon: Icon }: SidebarLinkProps) {
   const pathname = usePathname();
   const isActive = pathname === href;
-  
+
   return (
-    <Link href={href} className="w-full">
+    <Link href={href} className="block w-full px-3">
       <div
-        className={`relative flex cursor-pointer items-center transition-colors
-        ${isActive ? "bg-white/10" : "hover:bg-white/20"} justify-start px-8 py-3`}
+        className={`relative flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-widest transition-all duration-200 cursor-pointer ${
+          isActive
+            ? "bg-lime-400/10 text-lime-400"
+            : "text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800"
+        }`}
       >
+        
         {isActive && (
-          <div className="absolute left-0 top-0 h-[100%] w-[5px] bg-white" />
+          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-lime-400 rounded-full" />
         )}
-        <Icon className="mr-2 h-5 w-5 text-white" />
-        <span className="text-white">{label}</span>
+        <Icon className="h-4 w-4 shrink-0" />
+        <span>{label}</span>
       </div>
     </Link>
   );
-};
+}
+
+
 
 export default function SidebarClient() {
   const [isCollapsed, setIsCollapsed] = useState(true);
@@ -51,7 +61,7 @@ export default function SidebarClient() {
 
   const navItems = [
     { label: "Dashboard", href: "/dashboard", icon: House },
-    { label: "Settings", href: "/settings", icon: User },
+    { label: "Settings",  href: "/settings",  icon: User  },
   ];
 
   useEffect(() => {
@@ -59,97 +69,107 @@ export default function SidebarClient() {
       try {
         const res = await getUser();
         const decoded = jwtDecode<{ role: string }>(res.token).role;
-
         if (res) {
           setRole(decoded);
           setIsLoggedIn(true);
         } else {
           setIsLoggedIn(false);
         }
-      } catch (error) {
-        console.error("Failed to fetch user role:", error);
+      } catch {
         setIsLoggedIn(false);
-      } 
+      }
     }
-
     fetchUserRole();
   }, []);
 
   async function handleLogout() {
     try {
-      await logout();
       setIsLoggingOut(true);
+      await logout();
       router.push("/login");
     } catch (error) {
       console.error("Logout failed:", error);
+      setIsLoggingOut(false);
     }
   }
 
   return (
     <>
+      
       {isCollapsed && (
         <button
-          className="absolute top-3 left-3 p-2 bg-black text-white hover:bg-white hover:text-black rounded-md z-50 border border-white"
+          className="absolute top-3 left-3 z-50 w-9 h-9 flex items-center justify-center rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-lime-400 hover:border-lime-400/30 transition-all duration-200"
           onClick={() => setIsCollapsed(false)}
+          aria-label="Open menu"
         >
-          <Menu size={24} />
+          <Menu size={16} />
         </button>
       )}
 
+      
+      {!isCollapsed && (
+        <div
+          className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm"
+          onClick={() => setIsCollapsed(true)}
+        />
+      )}
+
+      
       <div
-        className={`flex flex-col h-screen justify-between shadow-xl
-        transition-all duration-300 z-40 overflow-y-auto
-        bg-black text-white
-        ${isCollapsed ? "w-0 -translate-x-full" : "w-64 translate-x-0"}`}
+        className={`fixed top-0 left-0 h-screen z-40 flex flex-col bg-zinc-950 border-r border-zinc-800 shadow-2xl transition-all duration-300 overflow-hidden ${
+          isCollapsed ? "w-0 opacity-0 pointer-events-none" : "w-64 opacity-100"
+        }`}
+        style={{ fontFamily: "'DM Mono', 'Fira Code', monospace" }}
       >
-        <div className="flex h-full w-full flex-col justify-start">
-          <div className="flex min-h-[56px] w-64 items-center justify-between px-6 pt-3">
-            <div className="flex items-center space-x-2 flex-shrink-0 text-white">
-              <Dumbbell className="h-8 w-8 text-white" />
-              <span className="text-2xl font-bold text-white">
-                <Link href="/">GymGenius</Link>
-              </span>
+        
+        <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-800 shrink-0">
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 group"
+            onClick={() => setIsCollapsed(true)}
+          >
+            <div className="w-7 h-7 rounded-lg bg-lime-400 flex items-center justify-center group-hover:bg-lime-300 transition-colors">
+              <Dumbbell className="h-3.5 w-3.5 text-zinc-900" />
             </div>
-            {!isCollapsed && (
-              <button
-                className="p-2 text-white hover:bg-white hover:text-black rounded-md border border-white"
-                onClick={() => setIsCollapsed(true)}
-              >
-                <X size={24} />
-              </button>
-            )}
-          </div>
+            <span className="text-xs font-bold text-zinc-100 uppercase tracking-widest">
+              GymGenius
+            </span>
+          </Link>
 
-          <nav className="z-10 w-full mt-8">
-            {navItems.map((item) => (
-              <SidebarLink
-                key={item.href}
-                href={item.href}
-                label={item.label}
-                icon={item.icon}
-              />
-            ))}
-
-            {role == "admin" && (
-              <SidebarLink href="/admin" label="Admin Panel" icon={CodeXml} />
-            )}
-
-            {isLoggedIn && (
-              <button 
-                onClick={handleLogout} 
-                className="w-full text-left"
-                disabled={isLoggingOut}
-              >
-                <div className="relative flex cursor-pointer items-center justify-start px-8 py-3 hover:bg-white/20 transition-colors">
-                  <User className="mr-2 h-5 w-5 text-white" />
-                  <span className="text-white">
-                    {isLoggingOut ? "Logging out..." : "Logout"}
-                  </span>
-                </div>
-              </button>
-            )}
-          </nav>
+          <button
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-zinc-600 hover:text-zinc-200 hover:bg-zinc-800 transition-all duration-200"
+            onClick={() => setIsCollapsed(true)}
+            aria-label="Close menu"
+          >
+            <X size={14} />
+          </button>
         </div>
+
+       
+        <nav className="flex-1 py-4 space-y-0.5 overflow-y-auto">
+          {navItems.map((item) => (
+            <SidebarLink key={item.href} {...item} />
+          ))}
+
+          {role === "admin" && (
+            <SidebarLink href="/admin" label="Admin Panel" icon={CodeXml} />
+          )}
+        </nav>
+
+        
+        {isLoggedIn && (
+          <div className="px-3 py-4 border-t border-zinc-800 shrink-0">
+            <button
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-widest text-zinc-500 hover:text-red-400 hover:bg-red-400/10 transition-all duration-200 disabled:opacity-50"
+            >
+              <LogOut className="h-4 w-4 shrink-0" />
+              {isLoggingOut ? "Logging out…" : "Logout"}
+            </button>
+          </div>
+        )}
+
       </div>
     </>
   );

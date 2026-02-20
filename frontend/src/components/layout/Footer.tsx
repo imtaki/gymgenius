@@ -1,79 +1,111 @@
-import { 
-  Dumbbell, 
-  TrendingUp, 
-  Calendar, 
-  Users, 
-} from "lucide-react";
-import { Button } from "../ui/button";
+import Link from "next/link";
+import { Dumbbell, TrendingUp, Calendar, Users } from "lucide-react";
+
+const PRODUCT_LINKS = [
+  { name: "Features", href: "#features" },
+  { name: "Pricing",  href: "#pricing"  },
+  { name: "API",      href: "#"         },
+];
+
+const SUPPORT_LINKS = [
+  { name: "Help Center", href: "#" },
+  { name: "Contact",     href: "#" },
+  { name: "Status",      href: "#" },
+];
+
+const SOCIAL_ICONS = [
+  { icon: Users,     href: "#", label: "Community"  },
+  { icon: Calendar,  href: "#", label: "Schedule"   },
+  { icon: TrendingUp,href: "#", label: "Progress"   },
+];
 
 export default function Footer() {
-    const currentYear = new Date().getFullYear();
+  const currentYear = new Date().getFullYear();
 
-    const productLinks = [
-        { name: "Features", href: "#" },
-        { name: "Pricing", href: "#" },
-        { name: "API", href: "#" },
-    ];
-    
-    const supportLinks = [  
-        { name: "Help Center", href: "#" },
-        { name: "Contact", href: "#" },
-        { name: "Status", href: "#" },
-    ];
+  return (
+    <footer
+      className="bg-zinc-950 border-t border-zinc-800 py-16"
+      style={{ fontFamily: "'DM Mono', 'Fira Code', monospace" }}
+    >
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid md:grid-cols-4 gap-10">
 
-    const buttonBadges = [
-        { icon: <Users className="h-4 w-4" />, href: "#" },
-        { icon: <Calendar className="h-4 w-4" />, href: "#" },
-        { icon: <TrendingUp className="h-4 w-4" />, href: "#" },
-    ];
-
-    return (
-    <footer className="py-14 border-t border-white/10" > 
-        <div className="container  mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div className="col-span-1 md:col-span-2">
-              <div className="flex items-center space-x-2 mb-4">
-                <Dumbbell className="h-8 w-8 text-primary" />
-                <span className="text-2xl font-bold">GymGenius</span>
+          
+          <div className="md:col-span-2">
+            <Link href="/" className="inline-flex items-center gap-2.5 mb-5 group">
+              <div className="w-8 h-8 rounded-lg bg-lime-400 flex items-center justify-center group-hover:bg-lime-300 transition-colors">
+                <Dumbbell className="h-4 w-4 text-zinc-900" />
               </div>
-              <p className="text-muted-foreground mb-4 max-w-md">
-                The AI-powered fitness platform that helps you achieve your health and wellness goals with personalized training and nutrition guidance.
-              </p>
-              <div className="flex space-x-4">
-                {buttonBadges.map((badge, index) => (
-                  <Button key={index} variant="outline" size="icon" asChild>
-                    <a href={badge.href} aria-label={`Link to ${badge.href}`}>
-                      {badge.icon}
-                    </a>
-                  </Button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Product</h3>
-              <ul className="space-y-2 text-muted-foreground">
-              {productLinks.map((item)=> (
-                  <li key={item.name}>
-                  <a key={item.name} href={item.href} className="hover:text-foreground transition-colors">{item.name}</a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Support</h3>
-              <ul className="space-y-2 text-muted-foreground">
-                {supportLinks.map((item)=> (
-                  <li key={item.name}>
-                  <a key={item.name} href={item.href} className="hover:text-foreground transition-colors">{item.name}</a>
-                  </li>
-                ))}
-              </ul>
+              <span className="text-sm font-bold text-zinc-100 uppercase tracking-widest">GymGenius</span>
+            </Link>
+
+            <p className="text-xs text-zinc-500 leading-relaxed max-w-sm mb-6">
+              The AI-powered fitness platform that helps you achieve your health and
+              wellness goals with personalized training and nutrition guidance.
+            </p>
+
+            <div className="flex items-center gap-2">
+              {SOCIAL_ICONS.map(({ icon: Icon, href, label }) => (
+                <a
+                  key={label}
+                  href={href}
+                  aria-label={label}
+                  className="w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500 hover:text-lime-400 hover:border-lime-400/30 transition-all duration-200"
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                </a>
+              ))}
             </div>
           </div>
-          <div className="mt-8 pt-6 text-center text-muted-foreground">
-            <p>&copy; {currentYear} GymGenius. All rights reserved.</p>
+
+          
+          <div>
+            <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-4">Product</h3>
+            <ul className="space-y-3">
+              {PRODUCT_LINKS.map((item) => (
+                <li key={item.name}>
+                  <a
+                    href={item.href}
+                    className="text-xs text-zinc-600 hover:text-zinc-200 transition-colors duration-200"
+                  >
+                    {item.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+         
+          <div>
+            <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-4">Support</h3>
+            <ul className="space-y-3">
+              {SUPPORT_LINKS.map((item) => (
+                <li key={item.name}>
+                  <a
+                    href={item.href}
+                    className="text-xs text-zinc-600 hover:text-zinc-200 transition-colors duration-200"
+                  >
+                    {item.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+        </div>
+
+       
+        <div className="mt-12 pt-6 border-t border-zinc-900 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <p className="text-xs text-zinc-700">
+            © {currentYear} GymGenius. All rights reserved.
+          </p>
+          <div className="flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-lime-400 animate-pulse" />
+            <span className="text-xs text-zinc-700">All systems operational</span>
           </div>
         </div>
-      </footer>
-    );
+
+      </div>
+    </footer>
+  );
 }
