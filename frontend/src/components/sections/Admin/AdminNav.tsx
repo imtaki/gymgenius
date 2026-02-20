@@ -3,7 +3,7 @@ import { TABS } from "../../../lib/admin/adminDataConstants";;
 
 export function AdminNav({ activeTab, onTabChange }) {
   return (
-    <div className="sticky top-0 z-20 bg-[#0a0c10]/80 backdrop-blur-xl border-b border-white/[0.05] px-6 py-3">
+    <div className="sticky top-0 z-20 bg-[#0a0c10]/80 backdrop-blur-xl px-6 py-3">
       <div className="flex items-center justify-center">
         <div className="flex items-center gap-1 bg-[#111318] border border-white/[0.06] rounded-xl p-1">
           {TABS.map((t) => (

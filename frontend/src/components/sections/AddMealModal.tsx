@@ -4,8 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, X, Loader2, Save } from "lucide-react";
 import { createMealForUser } from "../../app/api/mealService";
+import { format } from "date-fns";
 
-export default function AddMealModal({ userId }: { userId: string}) {
+export default function AddMealModal({ userId, date }: { userId: string; date: Date }) {
     const [isOpen, setIsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
@@ -27,6 +28,7 @@ export default function AddMealModal({ userId }: { userId: string}) {
         try {
             const payload = {
                 ...formData,
+                date: format(date, "yyyy-MM-dd"),
                 calories: Number(formData.calories),
                 protein: Number(formData.protein),
                 carbs: Number(formData.carbs),
@@ -57,7 +59,7 @@ export default function AddMealModal({ userId }: { userId: string}) {
         <>
             <button 
                 onClick={() => setIsOpen(true)}
-                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                className="flex items-center gap-2 bg-lime-600 hover:bg-lime-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
             >
                 <Plus className="w-4 h-4" /> Add Meal
             </button>
