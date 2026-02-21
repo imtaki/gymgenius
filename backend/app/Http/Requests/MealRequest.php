@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use App\Rules\NotInFuture;
 
 class MealRequest extends FormRequest
 {
@@ -19,7 +21,8 @@ class MealRequest extends FormRequest
             'calories' => 'required|integer|min:0',
             'protein' => 'required|integer|min:0',
             'carbs' => 'required|integer|min:0',
-            'fats' => 'required|integer|min:0'
+            'fats' => 'required|integer|min:0',
+            'date' => ['nullable', 'date', new NotInFuture()]
         ];
     }
 

@@ -43,10 +43,6 @@ class MealController extends Controller
     public function store(MealRequest $request, $userId) {
         Gate::authorize('create', [Meal::class, $userId]);
         $meal = $this->mealService->createMeal($userId, $request->validated());
-        // if (!$meal["success"]) {
-        //     return response()->json(['error' => $meal["message"]], 409);
-        // }
-        
         return response()->json($meal, 201);
     }
 

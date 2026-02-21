@@ -5,10 +5,18 @@ namespace App\Services;
 use App\Models\User;
 use App\Models\Meal;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use App\Services\DailyLogService;
 use Illuminate\Support\Facades\Cache;
 
 class MealService 
 {
+    protected $dailyLogService;
+
+    public function __construct(DailyLogService $dailyLogService)
+    {
+        $this->dailyLogService = $dailyLogService;
+    }
+
     /**
      * Get all meals for a user 
      */
@@ -35,9 +43,15 @@ class MealService
      */
     public function createMeal($userId, $data): Meal
     {
+        $user = User::findOrFail($userId);
         try {
-            $user = User::findOrFail($userId);
+            $dailyLog = $this->dailyLogService->getTodayLog($userId);
+
+            $data['daily_log_id'] = $dailyLog->id;
+            $data['user_id'] = $userId;
+
             return $user->meals()->create($data);
+
         } catch (\Exception $e) {
             throw new \Exception("Failed to create meal: {$e->getMessage()}");
         }
