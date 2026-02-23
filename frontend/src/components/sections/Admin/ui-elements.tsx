@@ -1,7 +1,7 @@
 import { TrendingUp, TrendingDown, Search, Filter, Plus } from "lucide-react";
 import { AVATAR_COLORS } from "../../../lib/admin/adminDataConstants";;
 
-// ── StatCard ──────────────────────────────────────────────────────────────────
+
 
 export function StatCard({ stat }) {
   return (
@@ -24,7 +24,7 @@ export function StatCard({ stat }) {
   );
 }
 
-// ── SectionHeader ─────────────────────────────────────────────────────────────
+
 
 export function SectionHeader({ title, action }) {
   return (
@@ -40,7 +40,7 @@ export function SectionHeader({ title, action }) {
   );
 }
 
-// ── SearchBar ─────────────────────────────────────────────────────────────────
+
 
 export function SearchBar({ placeholder }) {
   return (
@@ -58,7 +58,6 @@ export function SearchBar({ placeholder }) {
   );
 }
 
-// ── UserAvatar ────────────────────────────────────────────────────────────────
 
 export function UserAvatar({ initials, index, size = "md" }) {
   const bg = AVATAR_COLORS[index % AVATAR_COLORS.length];

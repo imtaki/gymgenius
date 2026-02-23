@@ -247,7 +247,6 @@ function SessionCard({ session }: { session: WorkoutSession }) {
   );
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function Page() {
   const [search, setSearch] = useState("");
@@ -266,7 +265,7 @@ export default function Page() {
       className="min-h-screen bg-zinc-950 p-6"
       style={{ fontFamily: "'DM Mono', 'Fira Code', monospace" }}
     >
-      {/* Background atmosphere */}
+     
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-lime-400/[0.025] rounded-full blur-3xl" />
         <svg className="absolute inset-0 w-full h-full opacity-[0.015]" xmlns="http://www.w3.org/2000/svg">
@@ -281,7 +280,7 @@ export default function Page() {
 
       <div className="relative max-w-4xl mx-auto space-y-6">
 
-        {/* ── Page header ── */}
+       
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <BackButton />
@@ -302,14 +301,14 @@ export default function Page() {
           </button>
         </div>
 
-        {/* ── Weekly stats ── */}
+        
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {WEEKLY_STATS.map((stat) => (
             <StatCard key={stat.label} stat={stat} />
           ))}
         </div>
 
-        {/* ── Weekly volume bar ── */}
+       
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -343,7 +342,7 @@ export default function Page() {
           </div>
         </div>
 
-        {/* ── Search + filter ── */}
+        
         <div className="flex items-center gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
