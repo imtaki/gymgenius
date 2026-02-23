@@ -11,9 +11,6 @@ use Tymon\JWTAuth\Exceptions\TokenInvalidException;
 
 class Authenticate extends Middleware
 {
-    /**
-     * Get the path the user should be redirected to when they are not authenticated.
-     */
     protected function redirectTo(Request $request): ?string
     {
         return $request->expectsJson() ? null : route('login');
@@ -24,10 +21,10 @@ class Authenticate extends Middleware
      */
     public function handle($request, $next, ...$guards)
     {
-        // Only apply JWT validation for API requests
+        
         if ($request->is('api/*')) {
             try {
-                // Check if Authorization header is present
+                
                 if (! $request->hasHeader('Authorization')) {
                     return response()->json([
                         'error' => 'Unauthorized',
@@ -35,7 +32,7 @@ class Authenticate extends Middleware
                     ], 401);
                 }
 
-                // Extract and validate token
+                
                 $token = JWTAuth::getToken();
                 
                 if (! $token) {
@@ -45,7 +42,7 @@ class Authenticate extends Middleware
                     ], 401);
                 }
 
-                // Attempt to authenticate the token
+                
                 $user = JWTAuth::authenticate($token);
 
                 if (! $user) {
