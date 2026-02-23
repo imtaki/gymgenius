@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use App\Models\Meal;
 use App\Models\UserSettings;
+use App\Models\WorkoutLog;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -88,5 +89,9 @@ class User extends Authenticatable implements JWTSubject
 
     public function settings() {
         return $this->hasOne(UserSettings::class);
+    }
+
+    public function workouts() {
+        return $this->hasMany(WorkoutLog::class);
     }
 }
