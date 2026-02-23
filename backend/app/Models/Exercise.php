@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\User;
+use App\Models\WorkoutLog;
+
 class Exercise extends Model
 {
     use HasFactory;
@@ -25,5 +28,10 @@ class Exercise extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function workoutLogs()
+    {
+        return $this->hasMany(WorkoutLog::class);
     }
 }
