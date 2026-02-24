@@ -82,7 +82,8 @@ class User extends Authenticatable implements JWTSubject
         });
     }
 
-
+    // Other table relationships
+    
     public function meals() {
         return $this->hasMany(Meal::class);
     }
@@ -93,5 +94,13 @@ class User extends Authenticatable implements JWTSubject
 
     public function workouts() {
         return $this->hasMany(WorkoutLog::class);
+    }
+
+    public function workoutPrograms() {
+        return $this->hasMany(WorkoutProgram::class);
+    }
+
+    public function workoutStreak() {
+        return $this->hasOne(WorkoutStreak::class);
     }
 }
