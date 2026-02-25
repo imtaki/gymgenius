@@ -16,6 +16,11 @@ class WorkoutProgramPolicy
         return $user->id === $workoutProgram->user_id;
     }
 
+    public function create(User $user): bool
+    {
+        return true;
+    }
+
     public function update(User $user, WorkoutProgram $workoutProgram): bool
     {
         return $user->id === $workoutProgram->user_id;
