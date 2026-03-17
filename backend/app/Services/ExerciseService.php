@@ -1,17 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Models\Exercise;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Collection;
 
 class ExerciseService
 {
     /**
      * Get all exercises for a user
      */
-    public function getExercisesByUser($userId)
+    public function getExercisesByUser($userId): Collection
     {
         return Cache::remember("user_{$userId}_exercises", now()->addMinutes(30), function () use ($userId) {
         try {
@@ -25,7 +28,7 @@ class ExerciseService
     /**
      * Get exercise by ID
      */
-    public function getExerciseById($id)
+    public function getExerciseById($id): Exercise
     {
         return Cache::remember("exercise_{$id}", now()->addHours(1), function () use ($id) {
             try {
@@ -56,7 +59,7 @@ class ExerciseService
     /**
      * Update an exercise
      */
-    public function updateExercise($exerciseId, $data)
+    public function updateExercise($exerciseId, $data): Exercise
     {
         try {
             $exercise = Exercise::findOrFail($exerciseId);
@@ -76,7 +79,7 @@ class ExerciseService
     /**
      * Delete an exercise
      */
-    public function deleteExercise($exerciseId)
+    public function deleteExercise($exerciseId): bool
     {
         try {
             $exercise = Exercise::findOrFail($exerciseId);
@@ -95,5 +98,23 @@ class ExerciseService
         } catch (\Exception $e) {
             throw new \Exception("Failed to delete exercise: {$e->getMessage()}");
         }
+    }
+
+    /**
+     * Get unique muscle groups for a user's exercises
+     */
+    public function getMuscleGroupsByUser($userId): Collection
+    {
+        return Cache::remember("user_{$userId}_muscle_groups", now()->addMinutes(30), function () use ($userId) {
+            try {
+                return Exercise::where('user_id', $userId)
+                    ->select('muscleGroup')
+                    ->distinct()
+                    ->toArray();
+            } catch (\Exception $e) {
+                throw new \Exception("Failed to retrieve muscle groups: {$e->getMessage()}");  
+            }
+        }
+        );
     }
 }
