@@ -2,13 +2,14 @@
 
 namespace App\Http\Requests;
 
+use App\Data\CreateExerciseData;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ExerciseRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return $this->user() !== null;
     }
 
     public function rules(): array
@@ -32,5 +33,14 @@ class ExerciseRequest extends FormRequest
             'description.string' => 'Description must be a string',
             'description.max' => 'Description cannot exceed 1000 characters'
         ];
+    }
+
+    public function toDto(): CreateExerciseData
+    {
+        return new CreateExerciseData(
+            name: (string) $this->validated('name'),
+            muscleGroup: (string) $this->validated('muscleGroup'),
+            description: $this->validated('description'),
+        );
     }
 }

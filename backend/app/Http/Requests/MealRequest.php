@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Data\CreateMealData;
+use App\Data\UpdateMealData;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Rules\NotInFuture;
@@ -10,7 +12,7 @@ class MealRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; 
+        return $this->user() !== null;
     }
 
     public function rules(): array
@@ -36,5 +38,22 @@ class MealRequest extends FormRequest
             'carbs.min' => 'Carbs cannot be negative',
             'fats.min' => 'Fats cannot be negative',
         ];
+    }
+
+    public function toDto(): CreateMealData|UpdateMealData
+    {
+        if ($this->isMethod('post')) {
+            return new CreateMealData(
+                name: (string) $this->validated('name'),
+                category: (string) $this->validated('category'),
+                calories: (int) $this->validated('calories'),
+                protein: (int) $this->validated('protein'),
+                carbs: (int) $this->validated('carbs'),
+                fats: (int) $this->validated('fats'),
+                date: $this->validated('date'),
+            );
+        }
+
+        return UpdateMealData::fromArray($this->validated());
     }
 }
