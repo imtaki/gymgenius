@@ -3,13 +3,12 @@ import axiosInstance from "./axios";
 export const getUserSettingsById = async (userId: string) => {
     try {
         const response = await axiosInstance.get(`/settings/user/${userId}`);
-        return response.data;
+        return response.data.data;
     } catch (error) {
-        console.error("Error fetching meals:", error);
+        console.error("Error fetching user settings:", error);
         throw error;
     }
 };
-
 
 export const updateUserSettings = async (userId: string, settingsData: any) => {
     try {
@@ -17,10 +16,14 @@ export const updateUserSettings = async (userId: string, settingsData: any) => {
         console.log('Request data:', settingsData);
         
         const response = await axiosInstance.put(`/settings/user/${userId}`, settingsData);
-        return response.data;
+        if (response.data.success) {
+            return response.data.data;
+        } else {
+            throw new Error(response.data.error || 'Failed to update user settings');
+        }
     } catch (error) {
         console.error("Error updating user settings:", error);
-        console.error("Error response:", error.response?.data); // This is key!
+        console.error("Error response:", error.response?.data);
         throw error;
     }
 };

@@ -14,8 +14,6 @@ export const registerUser = async (name: string, email: string, password: string
         throw error;
     }       
 };
- 
-
 
 export const loginUser = async (email: string, password: string) => {
     try {
@@ -23,17 +21,20 @@ export const loginUser = async (email: string, password: string) => {
         const { id, token } = response.data;
         localStorage.setItem("user", JSON.stringify({ id, token }));
         return { id, token };
-
-
     } catch (error) {
         throw error;
     }
 };
 
 export const logout = async () => {
-    localStorage.removeItem("user");
+    try {
+        await axiosInstance.post("/auth/logout");
+        localStorage.removeItem("user");
+    } catch (error) {
+        console.error("Error during logout:", error);
+        localStorage.removeItem("user");
+    }
 }
-
 
 export async function verifyEmailCode(email: string, code: string) {
     try {
