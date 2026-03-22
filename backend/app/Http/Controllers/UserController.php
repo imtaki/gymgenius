@@ -1,34 +1,35 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Traits\ApiResponseTrait;
 use App\Services\UserService;
-
+use Illuminate\Http\JsonResponse;
 
 class UserController extends Controller
 {
-    public function __construct(UserService $userService) 
+    use ApiResponseTrait;
+
+    public function __construct(private readonly UserService $userService) 
     {
-        $this->userService = $userService;
     }
     
     /**
      * Get User data and for admin dashboard, Cached, User count + Meal logs count
      */
-    public function indexUserData()
+    public function indexUserData(): JsonResponse
     {
-        return response()->json($this->userService->getUserDataCount(), 200);
+        return $this->successResponse($this->userService->getUserDataCount());
     }
 
     /**
      * Get Recent users, SELECT id, name, email, created_at FROM users ORDER BY created_at DESC LIMIT 5
-     * TODO: Implement this
      */
-        public function indexRecentUsers()
-        {
-            return response()->json($this->userService->getRecentUsers(), 200);
-        }
-
-
+    public function indexRecentUsers(): JsonResponse
+    {
+        return $this->successResponse($this->userService->getRecentUsers());
+    }
 }

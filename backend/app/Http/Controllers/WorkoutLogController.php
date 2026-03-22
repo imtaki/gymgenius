@@ -1,51 +1,59 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Services\WorkoutLogService;
+use App\Http\Requests\StoreWorkoutLogRequest;
+use App\Http\Requests\UpdateWorkoutLogRequest;
+use App\Http\Traits\ApiResponseTrait;
 use App\Models\WorkoutLog;
+use App\Services\WorkoutLogService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class WorkoutLogController extends Controller
 {
-     protected function __construct(WorkoutLogService $workoutLogService)
+    use ApiResponseTrait;
+
+    public function __construct(private readonly WorkoutLogService $workoutLogService)
     {
-        $this->workoutLogService = $workoutLogService;
     }
 
-    public function index() 
+    public function index(): JsonResponse
     {
-        $logs = $this->workoutLogService->getAllWorkoutLogs(auth()->user());
-        return response()->json($logs);
+        $logs = $this->workoutLogService->getAllWorkoutLogs(Auth::user());
+        return $this->successResponse($logs);
     }
 
-    public function show(WorkoutLog $workoutLog) 
+    public function show(WorkoutLog $workoutLog): JsonResponse
     {
-        Gate::authorize('view', WorkoutLog::class);
+        Gate::authorize('view', $workoutLog);
         $log = $this->workoutLogService->getWorkoutLogById($workoutLog->id);
-        return response()->json($log);
+        return $this->successResponse($log);
     }
 
-    public function store(StoreWorkoutLogRequest $request) 
+    public function store(StoreWorkoutLogRequest $request): JsonResponse
     {
-        Gate::authorize('create', [WorkoutLog::class, $request->user()->id]);
-        $log = $this->workoutLogService->createWorkoutLog(auth()->user(), $request->validated());
-        return response()->json($log, 201);
+        Gate::authorize('create', [WorkoutLog::class, Auth::id()]);
+        $log = $this->workoutLogService->createWorkoutLog(Auth::user(), $request->validated());
+        return $this->createdResponse($log);
     }
 
-    public function update(UpdateWorkoutLogRequest $request, WorkoutLog $workoutLog) 
+    public function update(UpdateWorkoutLogRequest $request, WorkoutLog $workoutLog): JsonResponse
     {
         Gate::authorize('update', $workoutLog);
         $log = $this->workoutLogService->updateWorkoutLog($workoutLog, $request->validated());
-        return response()->json($log);
+        return $this->successResponse($log);
     }
 
-    public function destroy(WorkoutLog $workoutLog) 
+    public function destroy(WorkoutLog $workoutLog): JsonResponse
     {
-        Gate::authorize('delete', WorkoutLog::class);
+        Gate::authorize('delete', $workoutLog);
         $this->workoutLogService->deleteWorkoutLog($workoutLog);
-        return response()->json(['message' => 'Workout log deleted successfully'], 204);
+        return $this->deletedResponse();
     }
 
     public function getDataByRange($startDate, $endDate) 

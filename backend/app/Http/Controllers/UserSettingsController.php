@@ -1,40 +1,43 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Traits\ApiResponseTrait;
 use App\Http\Requests\UserSettingsRequest;
 use App\Models\UserSettings;
 use App\Models\User;
 use App\Services\UserSettingsService;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class UserSettingsController extends Controller
 {
+    use ApiResponseTrait;
 
-    protected UserSettingsService $userSettingsService;
-
-    public function __construct(UserSettingsService $userSettingsService) {
-        $this->userSettingsService = $userSettingsService;
-    }
-
-    public function index($userId)
+    public function __construct(private readonly UserSettingsService $userSettingsService)
     {
-        return response()->json(UserSettings::where('user_id', $userId)->first(), 200);
     }
 
-    public function update(UserSettingsRequest $request, $userId) {
+    public function index($userId): JsonResponse
+    {
+        Gate::authorize('view', [UserSettings::class, $userId]);
+        $settings = UserSettings::where('user_id', $userId)->first();
+        return $this->successResponse($settings);
+    }
+
+    public function update(UserSettingsRequest $request, $userId): JsonResponse
+    {
         $user = User::findOrFail($userId);
-        
-        // Gate::authorize('update', $user);
+        Gate::authorize('update', $user);
 
         $settings = $this->userSettingsService->updateSettings($request, $user);
         if (!$settings["success"]) {
-            return response()->json(['error' => $settings["message"]], 401);
+            return $this->errorResponse($settings["message"], 401);
         }
-        return response()->json(['message' => $settings['message']]);
+        return $this->successResponse($settings, $settings['message']);
     }
-
 }

@@ -1,48 +1,57 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreWorkoutProgramRequest;
+use App\Http\Requests\UpdateWorkoutProgramRequest;
+use App\Http\Traits\ApiResponseTrait;
+use App\Models\WorkoutProgram;
+use App\Services\WorkoutProgramService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class WorkoutProgramController extends Controller
 {
-    protected function __construct(WorkoutProgramService $workoutProgramService)
+    use ApiResponseTrait;
+
+    public function __construct(private readonly WorkoutProgramService $workoutProgramService)
     {
-        $this->workoutProgramService = $workoutProgramService;
     }
 
-    public function index()
+    public function index(): JsonResponse
     {
-        $workoutPrograms = $this->workoutProgramService->getAllWorkoutPrograms(auth()->user());
-        return response()->json($workoutPrograms);
+        $workoutPrograms = $this->workoutProgramService->getAllWorkoutPrograms(Auth::user());
+        return $this->successResponse($workoutPrograms);
     }
 
-    public function show(WorkoutProgram $workoutProgram)
+    public function show(WorkoutProgram $workoutProgram): JsonResponse
     {
-        Gate::authorize('view', WorkoutProgram::class);
+        Gate::authorize('view', $workoutProgram);
         $workoutProgram->load('exercises');
-        return response()->json($workoutProgram);
+        return $this->successResponse($workoutProgram);
     }
 
-    public function store(StoreWorkoutProgramRequest $request)
+    public function store(StoreWorkoutProgramRequest $request): JsonResponse
     {
         Gate::authorize('create', WorkoutProgram::class);
-        $workoutProgram = $this->workoutProgramService->createWorkoutProgram($request->validated(), auth()->user());
-        return response()->json($workoutProgram, 201);
+        $workoutProgram = $this->workoutProgramService->createWorkoutProgram($request->validated(), Auth::user());
+        return $this->createdResponse($workoutProgram);
     }
 
-    public function update(UpdateWorkoutProgramRequest $request, WorkoutProgram $workoutProgram)
+    public function update(UpdateWorkoutProgramRequest $request, WorkoutProgram $workoutProgram): JsonResponse
     {
         Gate::authorize('update', $workoutProgram);
         $updatedWorkoutProgram = $this->workoutProgramService->updateWorkoutProgram($workoutProgram, $request->validated());
-        return response()->json($updatedWorkoutProgram);
+        return $this->successResponse($updatedWorkoutProgram);
     }
 
-    public function destroy(WorkoutProgram $workoutProgram)
+    public function destroy(WorkoutProgram $workoutProgram): JsonResponse
     {
         Gate::authorize('delete', $workoutProgram);
         $this->workoutProgramService->deleteWorkoutProgram($workoutProgram);
-        return response()->json(['message' => 'Workout program deleted successfully'], 204);
+        return $this->deletedResponse();
     }
 }

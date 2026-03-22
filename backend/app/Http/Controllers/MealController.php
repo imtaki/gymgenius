@@ -1,67 +1,70 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\MealRequest;
+use App\Http\Resources\MealResource;
+use App\Http\Traits\ApiResponseTrait;
 use App\Models\Meal;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\MealRequest;
+use Illuminate\Support\Facades\Gate;
 use App\Services\MealService;
 use App\Services\DailyLogService;
-use Illuminate\Support\Facades\Gate;
-
 
 class MealController extends Controller
 {
-    public function __construct(MealService $mealService, DailyLogService $dailyLogService) {
-        $this->mealService = $mealService;
-        $this->dailyLogService = $dailyLogService;
-    }
+    use ApiResponseTrait;
 
+    public function __construct(
+        private readonly MealService $mealService,
+        private readonly DailyLogService $dailyLogService
+    ) {}
 
-
-    public function index(Request $request, $userId)
+    public function index($userId): JsonResponse
     {
-        $user = Auth::user();
-        
-        if ($user->id != $userId) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
+        Gate::authorize('viewAny', [Meal::class, $userId]);
         $meals = $this->mealService->getMealByUser($userId);
-        return response()->json($meals, 200);
+        return $this->successResponse(
+            MealResource::collection($meals)
+        );
     }
 
-    public function show($mealId) {
-        $meal = $this->mealService->getMealById($id);
-        return response()->json($meal, 200);
+    public function show(Meal $meal): JsonResponse
+    {
+        Gate::authorize('view', $meal);
+        return $this->successResponse(
+            MealResource::make($meal)
+        );
     }
 
-    public function store(MealRequest $request, $userId) {
+    public function store(MealRequest $request, $userId): JsonResponse
+    {
         Gate::authorize('create', [Meal::class, $userId]);
-        $meal = $this->mealService->createMeal($userId, $request->validated());
-        return response()->json($meal, 201);
+        $meal = $this->mealService->createMeal($userId, $request->toDto());
+        return $this->createdResponse(
+            MealResource::make($meal)
+        );
     }
 
-    public function update(MealRequest $request, $mealId) {
-        Gate::authorize('update', Meal::class);
-        $meal = $this->mealService->updateMeal($mealId, $request);
-        if (!$data["success"]) {
-            return response()->json(['error' => $data["message"]], 409);
-        }
-        return response()->json($meal, 200);
+    public function update(MealRequest $request, Meal $meal): JsonResponse
+    {
+        Gate::authorize('update', $meal);
+        $updated = $this->mealService->updateMeal($meal->id, $request->toDto());
+        return $this->successResponse(
+            MealResource::make($updated)
+        );
     }
 
-
-
-    public function destroy($mealId) {
-        $meal = Meal::findOrFail($mealId);
+    public function destroy(Meal $meal): JsonResponse
+    {
         Gate::authorize('delete', $meal);
         $meal->delete();
-        return response()->json(["message" => "Meal deleted successfully"], 200);
+        return $this->deletedResponse();
     }
-
 }
