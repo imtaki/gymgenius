@@ -5,12 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Models\User;
-use Models\DailyLog;
 
 class Meal extends Model
 {
     use HasFactory;
+    
     protected $fillable = [
         'name',
         'user_id',
@@ -19,7 +18,8 @@ class Meal extends Model
         'calories',
         'protein',
         'carbs',
-        'fats'
+        'fats',
+        'date'
     ];
 
     protected $casts = [
@@ -29,11 +29,13 @@ class Meal extends Model
         'fats' => 'float'
     ];
 
-    public function user() {
+    public function user(): BelongsTo
+    {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function dailyLog() {
+    public function dailyLog(): BelongsTo
+    {
         return $this->belongsTo(DailyLog::class, 'daily_log_id');
     }
 }
