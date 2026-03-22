@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Data\CreateExerciseData;
 use App\Models\Exercise;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Cache;
@@ -17,11 +18,11 @@ class ExerciseService
     public function getExercisesByUser($userId): Collection
     {
         return Cache::remember("user_{$userId}_exercises", now()->addMinutes(30), function () use ($userId) {
-        try {
-            return Exercise::where('user_id', $userId)->get();
-        } catch (\Exception $e) {
-            throw new \Exception("Failed to retrieve exercises: {$e->getMessage()}");
-        }
+            try {
+                return Exercise::where('user_id', $userId)->get();
+            } catch (\Exception $e) {
+                throw new \Exception("Failed to retrieve exercises: {$e->getMessage()}");
+            }
         });
     }
 
@@ -42,13 +43,15 @@ class ExerciseService
     /**
      * Create a new exercise for a user
      */
-    public function createExercise($userId, $data): Exercise
+    public function createExercise($userId, CreateExerciseData $data): Exercise
     {
         try {
-            $data['user_id'] = $userId;
-            $exercise = Exercise::create($data);
-
-            Cache::forget("user_{$userId}_exercises");
+            $exercise = Exercise::create([
+                'user_id' => $userId,
+                'name' => $data->name,
+                'muscleGroup' => $data->muscleGroup,
+                'description' => $data->description,
+            ]);
 
             return $exercise;
         } catch (\Exception $e) {
@@ -59,14 +62,15 @@ class ExerciseService
     /**
      * Update an exercise
      */
-    public function updateExercise($exerciseId, $data): Exercise
+    public function updateExercise($exerciseId, CreateExerciseData $data): Exercise
     {
         try {
             $exercise = Exercise::findOrFail($exerciseId);
-            $exercise->update($data);
-
-            Cache::forget("exercise_{$exerciseId}");
-            Cache::forget("user_{$exercise->user_id}_exercises");
+            $exercise->update([
+                'name' => $data->name,
+                'muscleGroup' => $data->muscleGroup,
+                'description' => $data->description,
+            ]);
 
             return $exercise;
         } catch (ModelNotFoundException $e) {
@@ -83,16 +87,7 @@ class ExerciseService
     {
         try {
             $exercise = Exercise::findOrFail($exerciseId);
-            $userId = $exercise->user_id;
-            
-            $deleted = $exercise->delete();
-
-            if ($deleted) {
-                Cache::forget("exercise_{$exerciseId}");
-                Cache::forget("user_{$userId}_exercises");
-            }
-
-            return $deleted;
+            return $exercise->delete();
         } catch (ModelNotFoundException $e) {
             throw new ModelNotFoundException("Exercise not found with ID: {$exerciseId}");
         } catch (\Exception $e) {
@@ -108,13 +103,11 @@ class ExerciseService
         return Cache::remember("user_{$userId}_muscle_groups", now()->addMinutes(30), function () use ($userId) {
             try {
                 return Exercise::where('user_id', $userId)
-                    ->select('muscleGroup')
                     ->distinct()
-                    ->toArray();
+                    ->pluck('muscleGroup');
             } catch (\Exception $e) {
-                throw new \Exception("Failed to retrieve muscle groups: {$e->getMessage()}");  
+                throw new \Exception("Failed to retrieve muscle groups: {$e->getMessage()}");
             }
-        }
-        );
+        });
     }
 }

@@ -2,20 +2,16 @@
 
 namespace App\Services;
 
+use App\Data\CreateMealData;
+use App\Data\UpdateMealData;
 use App\Models\User;
 use App\Models\Meal;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use App\Services\DailyLogService;
 use Illuminate\Support\Facades\Cache;
 
 class MealService 
 {
-    protected $dailyLogService;
-
-    public function __construct(DailyLogService $dailyLogService)
-    {
-        $this->dailyLogService = $dailyLogService;
-    }
+    public function __construct(private readonly DailyLogService $dailyLogService) {}
 
     /**
      * Get all meals for a user 
@@ -41,17 +37,25 @@ class MealService
     /**
      * Create meal - Observer clears cache automatically
      */
-    public function createMeal($userId, $data): Meal
+    public function createMeal($userId, CreateMealData $data): Meal
     {
         $user = User::findOrFail($userId);
         try {
             $dailyLog = $this->dailyLogService->getTodayLog($userId);
 
-            $data['daily_log_id'] = $dailyLog->id;
-            $data['user_id'] = $userId;
+            $meal = $user->meals()->create([
+                'daily_log_id' => $dailyLog->id,
+                'user_id' => $userId,
+                'name' => $data->name,
+                'category' => $data->category,
+                'calories' => $data->calories,
+                'protein' => $data->protein,
+                'carbs' => $data->carbs,
+                'fats' => $data->fats,
+                'date' => $data->date,
+            ]);
 
-            return $user->meals()->create($data);
-
+            return $meal;
         } catch (\Exception $e) {
             throw new \Exception("Failed to create meal: {$e->getMessage()}");
         }
@@ -60,11 +64,22 @@ class MealService
     /**
      * Update meal - Observer clears cache automatically
      */
-    public function updateMeal($mealId, $data) 
+    public function updateMeal($mealId, UpdateMealData $data): Meal
     {
         try {
             $meal = Meal::findOrFail($mealId);
-            $meal->update($data);
+            
+            $updateData = array_filter([
+                'name' => $data->name,
+                'category' => $data->category,
+                'calories' => $data->calories,
+                'protein' => $data->protein,
+                'carbs' => $data->carbs,
+                'fats' => $data->fats,
+                'date' => $data->date,
+            ], fn($value) => $value !== null);
+
+            $meal->update($updateData);
             return $meal;
         } catch (ModelNotFoundException $e) {
             throw new ModelNotFoundException("Meal not found with ID: {$mealId}");
@@ -74,7 +89,7 @@ class MealService
     /**
      * Delete meal - Observer clears cache automatically
      */
-    public function deleteMeal($mealId)
+    public function deleteMeal($mealId): bool
     {
         try {
             $meal = Meal::findOrFail($mealId);
