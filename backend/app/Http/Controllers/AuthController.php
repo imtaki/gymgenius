@@ -9,12 +9,13 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\WelcomeMail;
 use Illuminate\Support\Facades\Cache;
 use App\Jobs\SendRateLimitedEmail;
+use App\Http\Requests\Auth\RegisterRequest;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $credentials = $request->only('name', 'email', 'password');
+        $credentials = $request->validated();
 
         try {
             $user = User::create([
@@ -25,9 +26,9 @@ class AuthController extends Controller
             ]);
 
             $code = random_int(10000, 99999);
-            
+
             Cache::put('verification_code_' . $user->email, $code, now()->addMinutes(10));
-            
+
             $user->is_verified = false;
             $user->save();
 
@@ -42,7 +43,7 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'User registered successfully',
             'user' => $user,
-            'token' => $token   
+            'token' => $token
         ]);
     }
 
@@ -63,7 +64,7 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Login successful',
             'id' => $user->id,
-            'token' => $token   
+            'token' => $token
         ]);
     }
 
@@ -117,11 +118,11 @@ class AuthController extends Controller
 
         if ((string)$cachedCode === (string)$code) {
             $user = User::where('email', $email)->first();
-            
+
             if ($user) {
                 $user->is_verified = true;
                 $user->save();
-                
+
                 Cache::forget('verification_code_' . $email);
 
                 return response()->json(['message' => 'Email verified successfully.'], 200);
