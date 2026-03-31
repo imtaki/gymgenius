@@ -1,315 +1,331 @@
 <?php
 
+namespace Tests\Feature;
+
 use App\Models\DailyLog;
 use App\Models\User;
 use App\Models\Meal;
+use App\Models\WorkoutProgram;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
-uses(Tests\TestCase::class);
-uses(Illuminate\Foundation\Testing\RefreshDatabase::class);
+class UserFeaturesTest extends TestCase
+{
+    use RefreshDatabase;
 
-describe('DailyLogController', function () {
-    describe('today', function () {
-        test('user can get today\'s daily log', function () {
-            $user = User::factory()->create();
+    // DailyLogController - today tests
+    public function test_user_can_get_todays_daily_log(): void
+    {
+        $user = User::factory()->create();
 
+        $response = $this->actingAs($user)->getJson("/api/daily-goals/user/{$user->id}/today");
+
+        $response->assertOk();
+        $response->assertJsonStructure(['success', 'data']);
+    }
+
+    public function test_unauthenticated_user_cannot_access_today_endpoint(): void
+    {
+        $response = $this->getJson('/api/daily-goals/user/1/today');
+
+        $response->assertUnauthorized();
+    }
+
+    public function test_user_cannot_access_another_users_today_log(): void
+    {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+
+        $response = $this->actingAs($user1)->getJson("/api/daily-goals/user/{$user2->id}/today");
+
+        $response->assertForbidden();
+    }
+
+    public function test_today_endpoint_includes_meals(): void
+    {
+        $user = User::factory()->create();
+        $dailyLog = DailyLog::factory()->for($user)->create(['date' => now()->format('Y-m-d')]);
+        Meal::factory()->count(2)->for($user)->for($dailyLog)->create();
+
+        $response = $this->actingAs($user)->getJson("/api/daily-goals/user/{$user->id}/today");
+
+        $response->assertOk();
+        $response->assertJsonStructure(['success', 'data' => ['meals']]);
+    }
+
+    // DailyLogController - weekly tests
+    public function test_user_can_get_weekly_log(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->getJson("/api/daily-goals/user/{$user->id}/weekly");
+
+        $response->assertOk();
+        $response->assertJsonStructure(['success', 'data']);
+    }
+
+    public function test_user_cannot_access_another_users_weekly_log(): void
+    {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+
+        $response = $this->actingAs($user1)->getJson("/api/daily-goals/user/{$user2->id}/weekly");
+
+        $response->assertForbidden();
+    }
+
+    // DailyLogController - byDate tests
+    public function test_user_can_get_log_by_specific_date(): void
+    {
+        $user = User::factory()->create();
+        $date = '2026-03-20';
+
+        $response = $this->actingAs($user)->getJson("/api/daily-goals/user/{$user->id}/date/{$date}");
+
+        $response->assertOk();
+        $response->assertJsonStructure(['success', 'data']);
+    }
+
+    public function test_user_cannot_access_another_users_date_specific_log(): void
+    {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+
+        $response = $this->actingAs($user1)->getJson("/api/daily-goals/user/{$user2->id}/date/2026-03-20");
+
+        $response->assertForbidden();
+    }
+
+    public function test_invalid_date_format_is_rejected(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->getJson("/api/daily-goals/user/{$user->id}/date/invalid-date");
+
+        $response->assertNotFound();
+    }
+
+    // DailyLogController - rate limiting tests
+    public function test_daily_goals_read_operations_have_300_requests_per_minute_limit(): void
+    {
+        $user = User::factory()->create();
+
+        for ($i = 0; $i < 300; $i++) {
             $response = $this->actingAs($user)->getJson("/api/daily-goals/user/{$user->id}/today");
+            $this->assertNotEquals(429, $response->status());
+        }
 
-            $response->assertOk();
-            $response->assertJsonStructure(['success', 'data']);
-        });
+        $response = $this->actingAs($user)->getJson("/api/daily-goals/user/{$user->id}/today");
+        $this->assertEquals(429, $response->status());
+    }
 
-        test('unauthenticated user cannot access today endpoint', function () {
-            $response = $this->getJson('/api/daily-goals/user/1/today');
+    // UserSettingsController - index tests
+    public function test_user_can_get_their_settings(): void
+    {
+        $user = User::factory()->create();
 
-            $response->assertUnauthorized();
-        });
+        $response = $this->actingAs($user)->getJson("/api/settings/user/{$user->id}");
 
-        test('user cannot access another user\'s today log', function () {
-            $user1 = User::factory()->create();
-            $user2 = User::factory()->create();
+        $response->assertOk();
+        $response->assertJsonStructure(['success', 'data']);
+        $response->assertJsonPath('data.user_id', $user->id);
+    }
 
-            $response = $this->actingAs($user1)->getJson("/api/daily-goals/user/{$user2->id}/today");
+    public function test_user_cannot_view_another_users_settings(): void
+    {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
 
-            $response->assertForbidden();
-        });
+        $response = $this->actingAs($user1)->getJson("/api/settings/user/{$user2->id}");
 
-        test('today endpoint includes meals', function () {
-            $user = User::factory()->create();
-            $dailyLog = DailyLog::factory()->for($user)->create(['date' => now()->format('Y-m-d')]);
-            Meal::factory()->count(2)->for($user)->for($dailyLog)->create();
+        $response->assertForbidden();
+    }
 
-            $response = $this->actingAs($user)->getJson("/api/daily-goals/user/{$user->id}/today");
+    public function test_unauthenticated_user_cannot_access_settings(): void
+    {
+        $response = $this->getJson('/api/settings/user/1');
 
-            $response->assertOk();
-            $response->assertJsonStructure(['success', 'data' => ['meals']]);
-        });
-    });
+        $response->assertUnauthorized();
+    }
 
-    describe('weekly', function () {
-        test('user can get weekly log', function () {
-            $user = User::factory()->create();
+    // UserSettingsController - update tests
+    public function test_user_can_update_their_settings(): void
+    {
+        $user = User::factory()->create();
 
-            $response = $this->actingAs($user)->getJson("/api/daily-goals/user/{$user->id}/weekly");
+        $response = $this->actingAs($user)->putJson("/api/settings/user/{$user->id}", [
+            'height' => 185,
+            'age' => 28,
+            'current_weight' => 78.5,
+        ]);
 
-            $response->assertOk();
-            $response->assertJsonStructure(['success', 'data']);
-        });
+        $response->assertOk();
+        $this->assertDatabaseHas('user_settings', [
+            'user_id' => $user->id,
+            'height' => 185,
+            'age' => 28,
+        ]);
+    }
 
-        test('user cannot access another user\'s weekly log', function () {
-            $user1 = User::factory()->create();
-            $user2 = User::factory()->create();
+    public function test_user_cannot_update_another_users_settings(): void
+    {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
 
-            $response = $this->actingAs($user1)->getJson("/api/daily-goals/user/{$user2->id}/weekly");
+        $response = $this->actingAs($user1)->putJson("/api/settings/user/{$user2->id}", [
+            'height' => 185,
+        ]);
 
-            $response->assertForbidden();
-        });
-    });
+        $response->assertForbidden();
+    }
 
-    describe('byDate', function () {
-        test('user can get log by specific date', function () {
-            $user = User::factory()->create();
-            $date = '2026-03-20';
+    public function test_update_validates_numeric_fields(): void
+    {
+        $user = User::factory()->create();
 
-            $response = $this->actingAs($user)->getJson("/api/daily-goals/user/{$user->id}/date/{$date}");
+        $response = $this->actingAs($user)->putJson("/api/settings/user/{$user->id}", [
+            'age' => 'not-a-number',
+        ]);
 
-            $response->assertOk();
-            $response->assertJsonStructure(['success', 'data']);
-        });
+        $response->assertUnprocessable();
+    }
 
-        test('user cannot access another user\'s date-specific log', function () {
-            $user1 = User::factory()->create();
-            $user2 = User::factory()->create();
+    // UserSettingsController - rate limiting tests
+    public function test_settings_update_is_rate_limited_to_30_requests_per_minute(): void
+    {
+        $user = User::factory()->create();
 
-            $response = $this->actingAs($user1)->getJson("/api/daily-goals/user/{$user2->id}/date/2026-03-20");
-
-            $response->assertForbidden();
-        });
-
-        test('invalid date format is rejected', function () {
-            $user = User::factory()->create();
-
-            $response = $this->actingAs($user)->getJson("/api/daily-goals/user/{$user->id}/date/invalid-date");
-
-            $response->assertNotFound();
-        });
-    });
-
-    describe('rate limiting on read operations', function () {
-        test('daily goals read operations have 300 requests per minute limit', function () {
-            $user = User::factory()->create();
-
-            for ($i = 0; $i < 300; $i++) {
-                $response = $this->actingAs($user)->getJson("/api/daily-goals/user/{$user->id}/today");
-                $this->assertNotEquals(429, $response->status());
-            }
-
-            $response = $this->actingAs($user)->getJson("/api/daily-goals/user/{$user->id}/today");
-            $this->assertEquals(429, $response->status());
-        });
-    });
-});
-
-describe('UserSettingsController', function () {
-    describe('index', function () {
-        test('user can get their settings', function () {
-            $user = User::factory()->create();
-
-            $response = $this->actingAs($user)->getJson("/api/settings/user/{$user->id}");
-
-            $response->assertOk();
-            $response->assertJsonStructure(['success', 'data']);
-            $response->assertJsonPath('data.user_id', $user->id);
-        });
-
-        test('user cannot view another user\'s settings', function () {
-            $user1 = User::factory()->create();
-            $user2 = User::factory()->create();
-
-            $response = $this->actingAs($user1)->getJson("/api/settings/user/{$user2->id}");
-
-            $response->assertForbidden();
-        });
-
-        test('unauthenticated user cannot access settings', function () {
-            $response = $this->getJson('/api/settings/user/1');
-
-            $response->assertUnauthorized();
-        });
-    });
-
-    describe('update', function () {
-        test('user can update their settings', function () {
-            $user = User::factory()->create();
-
+        for ($i = 0; $i < 30; $i++) {
             $response = $this->actingAs($user)->putJson("/api/settings/user/{$user->id}", [
-                'height' => 185,
-                'age' => 28,
-                'current_weight' => 78.5,
+                'age' => 25 + $i,
             ]);
+            $this->assertNotEquals(429, $response->status());
+        }
 
-            $response->assertOk();
-            $this->assertDatabaseHas('user_settings', [
-                'user_id' => $user->id,
-                'height' => 185,
-                'age' => 28,
-            ]);
-        });
+        $response = $this->actingAs($user)->putJson("/api/settings/user/{$user->id}", [
+            'age' => 60,
+        ]);
+        $this->assertEquals(429, $response->status());
+    }
 
-        test('user cannot update another user\'s settings', function () {
-            $user1 = User::factory()->create();
-            $user2 = User::factory()->create();
+    // WorkoutProgramController - index tests
+    public function test_user_can_list_their_workout_programs(): void
+    {
+        $user = User::factory()->create();
+        WorkoutProgram::factory()->count(3)->for($user)->create();
 
-            $response = $this->actingAs($user1)->putJson("/api/settings/user/{$user2->id}", [
-                'height' => 185,
-            ]);
+        $response = $this->actingAs($user)->getJson('/api/workout-programs');
 
-            $response->assertForbidden();
-        });
+        $response->assertOk();
+        $response->assertJsonStructure(['success', 'data']);
+    }
 
-        test('update validates numeric fields', function () {
-            $user = User::factory()->create();
+    public function test_unauthenticated_user_cannot_list_programs(): void
+    {
+        $response = $this->getJson('/api/workout-programs');
 
-            $response = $this->actingAs($user)->putJson("/api/settings/user/{$user->id}", [
-                'age' => 'not-a-number',
-            ]);
+        $response->assertUnauthorized();
+    }
 
-            $response->assertUnprocessable();
-        });
-    });
+    // WorkoutProgramController - show tests
+    public function test_user_can_view_their_workout_program(): void
+    {
+        $user = User::factory()->create();
+        $program = WorkoutProgram::factory()->for($user)->create();
 
-    describe('rate limiting', function () {
-        test('settings update is rate limited to 30 requests per minute', function () {
-            $user = User::factory()->create();
+        $response = $this->actingAs($user)->getJson("/api/workout-programs/{$program->id}");
 
-            for ($i = 0; $i < 30; $i++) {
-                $response = $this->actingAs($user)->putJson("/api/settings/user/{$user->id}", [
-                    'age' => 25 + $i,
-                ]);
-                $this->assertNotEquals(429, $response->status());
-            }
+        $response->assertOk();
+        $response->assertJsonPath('data.id', $program->id);
+    }
 
-            $response = $this->actingAs($user)->putJson("/api/settings/user/{$user->id}", [
-                'age' => 60,
-            ]);
-            $this->assertEquals(429, $response->status());
-        });
-    });
-});
+    public function test_user_cannot_view_another_users_program(): void
+    {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+        $program = WorkoutProgram::factory()->for($user1)->create();
 
-describe('WorkoutProgramController', function () {
-    describe('index', function () {
-        test('user can list their workout programs', function () {
-            $user = User::factory()->create();
-            \App\Models\WorkoutProgram::factory()->count(3)->for($user)->create();
+        $response = $this->actingAs($user2)->getJson("/api/workout-programs/{$program->id}");
 
-            $response = $this->actingAs($user)->getJson('/api/workout-programs');
+        $response->assertForbidden();
+    }
 
-            $response->assertOk();
-            $response->assertJsonStructure(['success', 'data']);
-        });
+    // WorkoutProgramController - store tests
+    public function test_user_can_create_workout_program(): void
+    {
+        $user = User::factory()->create();
 
-        test('unauthenticated user cannot list programs', function () {
-            $response = $this->getJson('/api/workout-programs');
+        $response = $this->actingAs($user)->postJson('/api/workout-programs', [
+            'name' => 'Push/Pull/Legs',
+        ]);
 
-            $response->assertUnauthorized();
-        });
-    });
+        $response->assertCreated();
+        $this->assertDatabaseHas('workout_programs', [
+            'name' => 'Push/Pull/Legs',
+            'user_id' => $user->id,
+        ]);
+    }
 
-    describe('show', function () {
-        test('user can view their workout program', function () {
-            $user = User::factory()->create();
-            $program = \App\Models\WorkoutProgram::factory()->for($user)->create();
+    public function test_create_program_validates_required_fields(): void
+    {
+        $user = User::factory()->create();
 
-            $response = $this->actingAs($user)->getJson("/api/workout-programs/{$program->id}");
+        $response = $this->actingAs($user)->postJson('/api/workout-programs', []);
 
-            $response->assertOk();
-            $response->assertJsonPath('data.id', $program->id);
-        });
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors(['name']);
+    }
 
-        test('user cannot view another user\'s program', function () {
-            $user1 = User::factory()->create();
-            $user2 = User::factory()->create();
-            $program = \App\Models\WorkoutProgram::factory()->for($user1)->create();
+    // WorkoutProgramController - update tests
+    public function test_user_can_update_their_program(): void
+    {
+        $user = User::factory()->create();
+        $program = WorkoutProgram::factory()->for($user)->create();
 
-            $response = $this->actingAs($user2)->getJson("/api/workout-programs/{$program->id}");
+        $response = $this->actingAs($user)->putJson("/api/workout-programs/{$program->id}", [
+            'name' => 'Updated Name',
+        ]);
 
-            $response->assertForbidden();
-        });
-    });
+        $response->assertOk();
+        $this->assertDatabaseHas('workout_programs', [
+            'id' => $program->id,
+            'name' => 'Updated Name',
+        ]);
+    }
 
-    describe('store', function () {
-        test('user can create workout program', function () {
-            $user = User::factory()->create();
+    public function test_user_cannot_update_another_users_program(): void
+    {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+        $program = WorkoutProgram::factory()->for($user1)->create();
 
-            $response = $this->actingAs($user)->postJson('/api/workout-programs', [
-                'name' => 'Push/Pull/Legs',
-            ]);
+        $response = $this->actingAs($user2)->putJson("/api/workout-programs/{$program->id}", [
+            'name' => 'Updated',
+        ]);
 
-            $response->assertCreated();
-            $this->assertDatabaseHas('workout_programs', [
-                'name' => 'Push/Pull/Legs',
-                'user_id' => $user->id,
-            ]);
-        });
+        $response->assertForbidden();
+    }
 
-        test('create program validates required fields', function () {
-            $user = User::factory()->create();
+    // WorkoutProgramController - destroy tests
+    public function test_user_can_delete_their_program(): void
+    {
+        $user = User::factory()->create();
+        $program = WorkoutProgram::factory()->for($user)->create();
 
-            $response = $this->actingAs($user)->postJson('/api/workout-programs', []);
+        $response = $this->actingAs($user)->deleteJson("/api/workout-programs/{$program->id}");
 
-            $response->assertUnprocessable();
-            $response->assertJsonValidationErrors(['name']);
-        });
-    });
+        $response->assertOk();
+        $this->assertDatabaseMissing('workout_programs', ['id' => $program->id]);
+    }
 
-    describe('update', function () {
-        test('user can update their program', function () {
-            $user = User::factory()->create();
-            $program = \App\Models\WorkoutProgram::factory()->for($user)->create();
+    public function test_user_cannot_delete_another_users_program(): void
+    {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+        $program = WorkoutProgram::factory()->for($user1)->create();
 
-            $response = $this->actingAs($user)->putJson("/api/workout-programs/{$program->id}", [
-                'name' => 'Updated Name',
-            ]);
+        $response = $this->actingAs($user2)->deleteJson("/api/workout-programs/{$program->id}");
 
-            $response->assertOk();
-            $this->assertDatabaseHas('workout_programs', [
-                'id' => $program->id,
-                'name' => 'Updated Name',
-            ]);
-        });
-
-        test('user cannot update another user\'s program', function () {
-            $user1 = User::factory()->create();
-            $user2 = User::factory()->create();
-            $program = \App\Models\WorkoutProgram::factory()->for($user1)->create();
-
-            $response = $this->actingAs($user2)->putJson("/api/workout-programs/{$program->id}", [
-                'name' => 'Updated',
-            ]);
-
-            $response->assertForbidden();
-        });
-    });
-
-    describe('destroy', function () {
-        test('user can delete their program', function () {
-            $user = User::factory()->create();
-            $program = \App\Models\WorkoutProgram::factory()->for($user)->create();
-
-            $response = $this->actingAs($user)->deleteJson("/api/workout-programs/{$program->id}");
-
-            $response->assertOk();
-            $this->assertDatabaseMissing('workout_programs', ['id' => $program->id]);
-        });
-
-        test('user cannot delete another user\'s program', function () {
-            $user1 = User::factory()->create();
-            $user2 = User::factory()->create();
-            $program = \App\Models\WorkoutProgram::factory()->for($user1)->create();
-
-            $response = $this->actingAs($user2)->deleteJson("/api/workout-programs/{$program->id}");
-
-            $response->assertForbidden();
-        });
-    });
-});
+        $response->assertForbidden();
+    }
+};

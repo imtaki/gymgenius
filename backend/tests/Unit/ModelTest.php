@@ -1,211 +1,214 @@
 <?php
 
+namespace Tests\Unit;
+
+use App\Models\DailyLog;
+use App\Models\Exercise;
+use App\Models\Meal;
 use App\Models\User;
+use App\Models\WorkoutLog;
+use App\Models\WorkoutProgram;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
-uses(Tests\TestCase::class);
-uses(Illuminate\Foundation\Testing\RefreshDatabase::class);
+class ModelTest extends TestCase
+{
+    use RefreshDatabase;
 
-describe('User Model', function () {
-    describe('relationships', function () {
-        test('user has many exercises', function () {
-            $user = User::factory()->create();
-            $exercise = \App\Models\Exercise::factory()->for($user)->create();
+    // User Model tests
+    public function test_user_has_many_exercises(): void
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->for($user)->create();
 
-            $this->assertTrue($user->exercises->contains($exercise));
-        });
+        $this->assertTrue($user->exercises->contains($exercise));
+    }
 
-        test('user has many meals', function () {
-            $user = User::factory()->create();
-            $dailyLog = \App\Models\DailyLog::factory()->for($user)->create();
-            $meal = \App\Models\Meal::factory()->for($user)->for($dailyLog)->create();
+    public function test_user_has_many_meals(): void
+    {
+        $user = User::factory()->create();
+        $dailyLog = DailyLog::factory()->for($user)->create();
+        $meal = Meal::factory()->for($user)->for($dailyLog)->create();
 
-            $this->assertTrue($user->meals->contains($meal));
-        });
+        $this->assertTrue($user->meals->contains($meal));
+    }
 
-        test('user has one settings', function () {
-            $user = User::factory()->create();
+    public function test_user_has_one_settings(): void
+    {
+        $user = User::factory()->create();
 
-            $this->assertNotNull($user->settings);
-            $this->assertEquals($user->id, $user->settings->user_id);
-        });
+        $this->assertNotNull($user->settings);
+        $this->assertEquals($user->id, $user->settings->user_id);
+    }
 
-        test('user has many workout logs', function () {
-            $user = User::factory()->create();
-            $workoutLog = \App\Models\WorkoutLog::factory()->for($user)->create();
+    public function test_user_has_many_workout_logs(): void
+    {
+        $user = User::factory()->create();
+        $workoutLog = WorkoutLog::factory()->for($user)->create();
 
-            $this->assertTrue($user->workoutLogs->contains($workoutLog));
-        });
+        $this->assertTrue($user->workoutLogs->contains($workoutLog));
+    }
 
-        test('user has many workout programs', function () {
-            $user = User::factory()->create();
-            $program = \App\Models\WorkoutProgram::factory()->for($user)->create();
+    public function test_user_has_many_workout_programs(): void
+    {
+        $user = User::factory()->create();
+        $program = WorkoutProgram::factory()->for($user)->create();
 
-            $this->assertTrue($user->workoutPrograms->contains($program));
-        });
-    });
+        $this->assertTrue($user->workoutPrograms->contains($program));
+    }
 
-    describe('JWT implementation', function () {
-        test('user has JWT identifier', function () {
-            $user = User::factory()->create();
+    public function test_user_has_jwt_identifier(): void
+    {
+        $user = User::factory()->create();
 
-            $identifier = $user->getJWTIdentifier();
-            $this->assertEquals($user->id, $identifier);
-        });
+        $identifier = $user->getJWTIdentifier();
+        $this->assertEquals($user->id, $identifier);
+    }
 
-        test('user has JWT custom claims', function () {
-            $user = User::factory()->create();
+    public function test_user_has_jwt_custom_claims(): void
+    {
+        $user = User::factory()->create();
 
-            $claims = $user->getJWTCustomClaims();
-            $this->assertIsArray($claims);
-        });
-    });
+        $claims = $user->getJWTCustomClaims();
+        $this->assertIsArray($claims);
+    }
 
-    describe('user settings creation', function () {
-        test('user settings are auto-created on user creation', function () {
-            $user = User::factory()->create();
+    public function test_user_settings_are_auto_created_on_user_creation(): void
+    {
+        $user = User::factory()->create();
 
-            $this->assertNotNull($user->settings);
-            $this->assertEquals($user->id, $user->settings->user_id);
-        });
+        $this->assertNotNull($user->settings);
+        $this->assertEquals($user->id, $user->settings->user_id);
+    }
 
-        test('user settings have default values', function () {
-            $user = User::factory()->create();
+    public function test_user_settings_have_default_values(): void
+    {
+        $user = User::factory()->create();
 
-            $this->assertNotNull($user->settings->goal_type);
-            $this->assertNotNull($user->settings->caloric_goal);
-        });
-    });
-});
+        $this->assertNotNull($user->settings->goal_type);
+        $this->assertNotNull($user->settings->caloric_goal);
+    }
 
-describe('Exercise Model', function () {
-    describe('relationships', function () {
-        test('exercise belongs to user', function () {
-            $user = User::factory()->create();
-            $exercise = \App\Models\Exercise::factory()->for($user)->create();
+    // Exercise Model tests
+    public function test_exercise_belongs_to_user(): void
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->for($user)->create();
 
-            $this->assertTrue($exercise->user->is($user));
-        });
+        $this->assertTrue($exercise->user->is($user));
+    }
 
-        test('exercise has many workout logs', function () {
-            $user = User::factory()->create();
-            $exercise = \App\Models\Exercise::factory()->for($user)->create();
-            $workoutLog = \App\Models\WorkoutLog::factory()->for($user)->for($exercise)->create();
+    public function test_exercise_has_many_workout_logs(): void
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->for($user)->create();
+        $workoutLog = WorkoutLog::factory()->for($user)->for($exercise)->create();
 
-            $this->assertTrue($exercise->workoutLogs->contains($workoutLog));
-        });
-    });
-});
+        $this->assertTrue($exercise->workoutLogs->contains($workoutLog));
+    }
 
-describe('Meal Model', function () {
-    describe('relationships', function () {
-        test('meal belongs to user', function () {
-            $user = User::factory()->create();
-            $dailyLog = \App\Models\DailyLog::factory()->for($user)->create();
-            $meal = \App\Models\Meal::factory()->for($user)->for($dailyLog)->create();
+    // Meal Model tests
+    public function test_meal_belongs_to_user(): void
+    {
+        $user = User::factory()->create();
+        $dailyLog = DailyLog::factory()->for($user)->create();
+        $meal = Meal::factory()->for($user)->for($dailyLog)->create();
 
-            $this->assertTrue($meal->user->is($user));
-        });
+        $this->assertTrue($meal->user->is($user));
+    }
 
-        test('meal belongs to daily log', function () {
-            $user = User::factory()->create();
-            $dailyLog = \App\Models\DailyLog::factory()->for($user)->create();
-            $meal = \App\Models\Meal::factory()->for($user)->for($dailyLog)->create();
+    public function test_meal_belongs_to_daily_log(): void
+    {
+        $user = User::factory()->create();
+        $dailyLog = DailyLog::factory()->for($user)->create();
+        $meal = Meal::factory()->for($user)->for($dailyLog)->create();
 
-            $this->assertTrue($meal->dailyLog->is($dailyLog));
-        });
-    });
+        $this->assertTrue($meal->dailyLog->is($dailyLog));
+    }
 
-    describe('field casting', function () {
-        test('numeric fields are cast to float', function () {
-            $user = User::factory()->create();
-            $dailyLog = \App\Models\DailyLog::factory()->for($user)->create();
-            $meal = \App\Models\Meal::factory()->for($user)->for($dailyLog)->create([
-                'calories' => 150,
-                'protein' => 25.5,
-                'carbs' => 10,
-                'fats' => 3.2,
-            ]);
+    public function test_numeric_fields_are_cast_to_float(): void
+    {
+        $user = User::factory()->create();
+        $dailyLog = DailyLog::factory()->for($user)->create();
+        $meal = Meal::factory()->for($user)->for($dailyLog)->create([
+            'calories' => 150,
+            'protein' => 25.5,
+            'carbs' => 10,
+            'fats' => 3.2,
+        ]);
 
-            $this->assertIsFloat($meal->calories) || $this->assertIsInt($meal->calories);
-            $this->assertIsFloat($meal->protein) || $this->assertIsInt($meal->protein);
-        });
-    });
-});
+        $this->assertTrue(is_float($meal->calories) || is_int($meal->calories));
+        $this->assertTrue(is_float($meal->protein) || is_int($meal->protein));
+    }
 
-describe('DailyLog Model', function () {
-    describe('relationships', function () {
-        test('daily log has many meals', function () {
-            $user = User::factory()->create();
-            $dailyLog = \App\Models\DailyLog::factory()->for($user)->create();
-            $meal = \App\Models\Meal::factory()->for($user)->for($dailyLog)->create();
+    // DailyLog Model tests
+    public function test_daily_log_has_many_meals(): void
+    {
+        $user = User::factory()->create();
+        $dailyLog = DailyLog::factory()->for($user)->create();
+        $meal = Meal::factory()->for($user)->for($dailyLog)->create();
 
-            $this->assertTrue($dailyLog->meals->contains($meal));
-        });
+        $this->assertTrue($dailyLog->meals->contains($meal));
+    }
 
-        test('daily log belongs to user', function () {
-            $user = User::factory()->create();
-            $dailyLog = \App\Models\DailyLog::factory()->for($user)->create();
+    public function test_daily_log_belongs_to_user(): void
+    {
+        $user = User::factory()->create();
+        $dailyLog = DailyLog::factory()->for($user)->create();
 
-            $this->assertTrue($dailyLog->user->is($user));
-        });
-    });
-});
+        $this->assertTrue($dailyLog->user->is($user));
+    }
 
-describe('WorkoutLog Model', function () {
-    describe('relationships', function () {
-        test('workout log belongs to user', function () {
-            $user = User::factory()->create();
-            $exercise = \App\Models\Exercise::factory()->for($user)->create();
-            $workoutLog = \App\Models\WorkoutLog::factory()->for($user)->for($exercise)->create();
+    // WorkoutLog Model tests
+    public function test_workout_log_belongs_to_user(): void
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->for($user)->create();
+        $workoutLog = WorkoutLog::factory()->for($user)->for($exercise)->create();
 
-            $this->assertTrue($workoutLog->user->is($user));
-        });
+        $this->assertTrue($workoutLog->user->is($user));
+    }
 
-        test('workout log belongs to exercise', function () {
-            $user = User::factory()->create();
-            $exercise = \App\Models\Exercise::factory()->for($user)->create();
-            $workoutLog = \App\Models\WorkoutLog::factory()->for($user)->for($exercise)->create();
+    public function test_workout_log_belongs_to_exercise(): void
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->for($user)->create();
+        $workoutLog = WorkoutLog::factory()->for($user)->for($exercise)->create();
 
-            $this->assertTrue($workoutLog->exercise->is($exercise));
-        });
-    });
-});
+        $this->assertTrue($workoutLog->exercise->is($exercise));
+    }
 
-describe('WorkoutProgram Model', function () {
-    describe('relationships', function () {
-        test('workout program belongs to user', function () {
-            $user = User::factory()->create();
-            $program = \App\Models\WorkoutProgram::factory()->for($user)->create();
+    // WorkoutProgram Model tests
+    public function test_workout_program_belongs_to_user(): void
+    {
+        $user = User::factory()->create();
+        $program = WorkoutProgram::factory()->for($user)->create();
 
-            $this->assertTrue($program->user->is($user));
-        });
-    });
-});
+        $this->assertTrue($program->user->is($user));
+    }
 
-describe('UserSettings Model', function () {
-    describe('relationships', function () {
-        test('user settings belongs to user', function () {
-            $user = User::factory()->create();
-            $settings = $user->settings;
+    // UserSettings Model tests
+    public function test_user_settings_belongs_to_user(): void
+    {
+        $user = User::factory()->create();
+        $settings = $user->settings;
 
-            $this->assertTrue($settings->user->is($user));
-        });
-    });
+        $this->assertTrue($settings->user->is($user));
+    }
 
-    describe('field casting', function () {
-        test('numeric fields are properly cast', function () {
-            $user = User::factory()->create();
-            $settings = $user->settings;
-            $settings->update([
-                'height' => 180,
-                'age' => 30,
-                'current_weight' => 75.5,
-                'target_weight' => 70.0,
-                'caloric_goal' => 2500,
-            ]);
+    public function test_numeric_fields_are_properly_cast(): void
+    {
+        $user = User::factory()->create();
+        $settings = $user->settings;
+        $settings->update([
+            'height' => 180,
+            'age' => 30,
+            'current_weight' => 75.5,
+            'target_weight' => 70.0,
+            'caloric_goal' => 2500,
+        ]);
 
-            $this->assertIsInt($settings->age) || $this->assertIsFloat($settings->age);
-            $this->assertIsFloat($settings->current_weight) || $this->assertIsInt($settings->current_weight);
-        });
-    });
-});
+        $this->assertTrue(is_int($settings->age) || is_float($settings->age));
+        $this->assertTrue(is_float($settings->current_weight) || is_int($settings->current_weight));
+    }
+}
