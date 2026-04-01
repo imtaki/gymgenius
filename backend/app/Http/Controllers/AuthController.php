@@ -10,6 +10,8 @@ use App\Mail\WelcomeMail;
 use Illuminate\Support\Facades\Cache;
 use App\Jobs\SendRateLimitedEmail;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Enums\UserType;
+use App\Http\Resources\UserResource;
 
 class AuthController extends Controller
 {
@@ -22,14 +24,14 @@ class AuthController extends Controller
                 'name' => $credentials['name'],
                 'email' => $credentials['email'],
                 'password' => bcrypt($credentials['password']),
-                'role' => 'user'
+                'role' => UserType::USER,
+                'is_verified' => false
             ]);
 
             $code = random_int(10000, 99999);
 
             Cache::put('verification_code_' . $user->email, $code, now()->addMinutes(10));
 
-            $user->is_verified = false;
             $user->save();
 
             $token = JWTAuth::fromUser($user);
@@ -53,7 +55,7 @@ class AuthController extends Controller
 
         try {
             if (! $token = JWTAuth::attempt($credentials)) {
-                return response()->json(['error' => 'invalid_credentials'], 400);
+                return response()->json(['error' => 'invalid_credentials'], 401);
             }
         } catch (JWTException $e) {
             return response()->json(['error' => 'could_not_create_token'], 500);
@@ -94,7 +96,10 @@ class AuthController extends Controller
                 return JWTAuth::parseToken()->authenticate();
             });
 
-            return response()->json(['user' => $user]);
+            return response()->json([
+                'success' => true,
+                'data' => ['user' => new UserResource($user)]
+            ]);
 
         } catch (\Exception $e) {
             return response()->json(['error' => 'Token is invalid or expired'], 401);

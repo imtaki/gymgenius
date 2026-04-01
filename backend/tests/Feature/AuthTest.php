@@ -7,6 +7,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\Test;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Cache;
 
 
 class AuthTest extends TestCase
@@ -14,6 +17,7 @@ class AuthTest extends TestCase
     use RefreshDatabase, WithFaker;
 
     // Register tests
+    #[Test]
     #[Group('register')]
     public function test_user_can_register_with_valid_data(): void
     {
@@ -40,6 +44,7 @@ class AuthTest extends TestCase
         $this->assertDatabaseHas('users', ['email' => $email]);
     }
 
+    #[Test]
     #[Group('register')]
     public function test_register_validates_required_fields(): void
     {
@@ -48,6 +53,7 @@ class AuthTest extends TestCase
         $response->assertJsonValidationErrors(['name', 'email', 'password']);
     }
 
+    #[Test]
     #[Group('register')]
     public function test_register_validates_email_format(): void
     {
@@ -61,6 +67,7 @@ class AuthTest extends TestCase
         $response->assertJsonValidationErrors(['email']);
     }
 
+    #[Test]
     #[Group('register')]
     public function test_register_prevents_duplicate_emails(): void
     {
@@ -76,6 +83,7 @@ class AuthTest extends TestCase
         $response->assertJsonValidationErrors(['email']);
     }
 
+    #[Test]
     #[Group('register')]
     public function test_register_creates_user_settings_on_user_creation(): void
     {
@@ -90,6 +98,7 @@ class AuthTest extends TestCase
     }
 
     // Login tests
+    #[Test]
     #[Group('login')]
     public function test_user_can_login_with_valid_credentials(): void
     {
@@ -112,6 +121,7 @@ class AuthTest extends TestCase
         ]);
     }
 
+    #[Test]
     #[Group('login')]
     public function test_login_fails_with_invalid_password(): void
     {
@@ -125,20 +135,32 @@ class AuthTest extends TestCase
             'password' => 'WrongPassword!',
         ]);
 
-        $response->assertStatus(400);
+        $response->assertStatus(401);
+        $response->assertJsonStructure([
+            'status',
+            'message',
+            'errors'
+        ]);
     }
 
+    #[Test]
     #[Group('login')]
     public function test_login_fails_with_non_existent_email(): void
     {
         $response = $this->postJson('/api/login', [
-            'email' => 'nonexistent@example.com',
+            'email' => $this->faker->email(),
             'password' => 'Password123!',
         ]);
 
-        $response->assertUnauthorized();
+        $response->assertStatus(401);
+        $response->assertJsonStructure([
+            'status',
+            'message',
+            'errors'
+        ]);
     }
 
+    #[Test]
     #[Group('login')]
     public function test_login_validates_required_fields(): void
     {
@@ -148,17 +170,51 @@ class AuthTest extends TestCase
         $response->assertJsonValidationErrors(['email', 'password']);
     }
 
-    /** @group logout */
+    #[Group('logout')]
+    #[Test]
     // Logout tests
     public function test_authenticated_user_can_logout(): void
     {
+        // Create user
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->postJson('/api/auth/logout');
+        // Create JWT token for the user
+        $token = JWTAuth::fromUser($user);
 
-        $response->assertOk();
+
+        // Logout call
+        $response = $this->withHeader('Authorization', "Bearer $token")
+                     ->postJson('/api/auth/logout');
+
+        $response->assertOk()
+             ->assertJson(['message' => 'Successfully logged out']);
     }
-    /** @group logout */
+
+    #[Group('logout')]
+    #[Test]
+    public function test_authenticated_user_can_logout_and_token_is_invalidated(): void
+    {
+        // Create user
+        $user = User::factory()->create();
+
+        // Create JWT token for the user
+        $token = JWTAuth::fromUser($user);
+
+
+        // Logout call
+        $response = $this->withHeader('Authorization', "Bearer $token")
+                     ->postJson('/api/auth/logout');
+
+        $response->assertOk()
+             ->assertJson(['message' => 'Successfully logged out']);
+
+         $this->withHeader('Authorization', "Bearer $token")
+         ->getJson('/api/auth/user')
+         ->assertUnauthorized();
+    }
+
+    #[Group('logout')]
+    #[Test]
     public function test_unauthenticated_user_cannot_logout(): void
     {
         $response = $this->postJson('/api/auth/logout');
@@ -167,17 +223,51 @@ class AuthTest extends TestCase
     }
 
     // GetUser tests
-    public function test_authenticated_user_can_get_their_profile(): void
+    #[Test]
+    #[Group('user')]
+   public function test_authenticated_user_can_get_their_profile(): void
     {
-        $user = User::factory()->create();
+    // 1. Create the user with explicit attributes so we know what to expect
+    $user = User::factory()->create([
+        'role' => 'user',
+        'is_verified' => false,
+    ]);
 
-        $response = $this->actingAs($user)->getJson('/api/auth/user');
+    $token = JWTAuth::fromUser($user);
 
-        $response->assertOk();
-        $response->assertJsonStructure(['success', 'data' => ['id', 'name', 'email', 'role']]);
-        $response->assertJsonPath('data.id', $user->id);
+    // 2. Request
+    $response = $this->withHeader('Authorization', "Bearer $token")
+                     ->getJson('/api/auth/user');
+
+    $response->assertOk();
+
+    $response->assertJsonStructure([
+        'success',
+        'data' => [
+            'user' => [
+                'id', 'name', 'email', 'role', 'is_verified'
+            ]
+        ]
+    ]);
+
+    $response->assertJson([
+        'success' => true,
+        'data' => [
+            'user' => [
+                'id'          => $user->id,
+                'name'        => $user->name,
+                'email'       => $user->email,
+                'role'        => 'user',
+                // Expecting 'is_verified to be false because the factory creates unverified users by default, and we explicitly set it to false when creating the user.'
+                // In future: create test for "is_verified true" case where user gets email code generated and verified, then check that "is_verified" is true in the response.
+                'is_verified' => false,
+            ]
+        ]
+    ]);
     }
 
+    #[Test]
+    #[Group('user')]
     public function test_unauthenticated_user_cannot_access_user_endpoint(): void
     {
         $response = $this->getJson('/api/auth/user');
@@ -185,40 +275,53 @@ class AuthTest extends TestCase
         $response->assertUnauthorized();
     }
 
-    // Rate limiting tests
+    #[Test]
+    #[TestDox('Test that the login endpoint is rate limited to 5 requests per minute per IP')]
+    #[Group('RateLimit')]
     public function test_login_is_rate_limited_to_5_requests_per_minute_per_ip(): void
     {
+         // Get the cache store for rate limiting
+        $cache = Cache::store(config('ratelimit.cache_store'));
+        $cache->flush();
+
         for ($i = 0; $i < 5; $i++) {
             $response = $this->postJson('/api/login', [
-                'email' => 'nonexistent@example.com',
-                'password' => 'test',
+                'email' => $this->faker->email(),
+                'password' =>$this->faker->password(),
             ]);
             $this->assertNotEquals(429, $response->status());
         }
 
         // 6th request should be rate limited
         $response = $this->postJson('/api/login', [
-            'email' => 'nonexistent@example.com',
-            'password' => 'test',
+            'email' => $this->faker->email(),
+            'password' => $this->faker->password(),
         ]);
         $this->assertEquals(429, $response->status());
     }
 
+    #[Test]
+    #[TestDox('Test that the register endpoint is rate limited to 5 requests per minute per IP')]
+    #[Group('RateLimit')]
     public function test_register_is_rate_limited_to_5_requests_per_minute_per_ip(): void
     {
+
+        $cache = Cache::store(config('ratelimit.cache_store'));
+        $cache->flush();
+
         for ($i = 0; $i < 5; $i++) {
             $this->postJson('/api/register', [
                 'name' => "User $i",
-                'email' => "user$i@example.com",
-                'password' => 'Password123!',
+                'email' => $this->faker->email(),
+                'password' => $this->faker->password(),
             ]);
         }
 
         // 6th request should be rate limited
         $response = $this->postJson('/api/register', [
             'name' => 'User 6',
-            'email' => 'user6@example.com',
-            'password' => 'Password123!',
+            'email' => $this->faker->email(),
+            'password' => $this->faker->password(),
         ]);
         $this->assertEquals(429, $response->status());
     }
