@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Meal extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = [
         'name',
         'user_id',
@@ -19,7 +19,6 @@ class Meal extends Model
         'protein',
         'carbs',
         'fats',
-        'date'
     ];
 
     protected $casts = [

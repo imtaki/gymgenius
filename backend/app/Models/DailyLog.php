@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DailyLog extends Model
 {
+    use HasFactory;
+
     protected $fillable = ['user_id', 'date', 'calorie_goal'];
 
     protected $casts = [
@@ -24,5 +27,5 @@ class DailyLog extends Model
         return $this->belongsTo(User::class);
     }
 
-    
+
 }

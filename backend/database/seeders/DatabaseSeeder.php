@@ -32,5 +32,10 @@ class DatabaseSeeder extends Seeder
             'role' => 'admin',
 
         ]);
+
+        $this->call([
+            ExerciseSeeder::class,
+            UserSettingsSeeder::class,
+        ]);
     }
 }

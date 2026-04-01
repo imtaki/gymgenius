@@ -2,13 +2,16 @@
 
 namespace Database\Factories;
 
+use App\Models\WorkoutProgram;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\DailyLog>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\WorkoutProgram>
  */
-class DailyLogFactory extends Factory
+class WorkoutProgramFactory extends Factory
 {
+    protected $model = WorkoutProgram::class;
+
     /**
      * Define the model's default state.
      *
@@ -17,8 +20,7 @@ class DailyLogFactory extends Factory
     public function definition(): array
     {
         return [
-            'date' => $this->faker->date(),
-            'calorie_goal' => $this->faker->numberBetween(1500, 3000),
+            'name' => $this->faker->word() . ' Program',
         ];
     }
 }

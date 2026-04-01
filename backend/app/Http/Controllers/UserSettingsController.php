@@ -10,13 +10,12 @@ use App\Http\Requests\UserSettingsRequest;
 use App\Models\UserSettings;
 use App\Models\User;
 use App\Services\UserSettingsService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 
 class UserSettingsController extends Controller
 {
-    use ApiResponseTrait;
+    use ApiResponseTrait, AuthorizesRequests;
 
     public function __construct(private readonly UserSettingsService $userSettingsService)
     {
@@ -24,20 +23,16 @@ class UserSettingsController extends Controller
 
     public function index($userId): JsonResponse
     {
-        Gate::authorize('view', [UserSettings::class, $userId]);
+        $this->authorize('view', [UserSettings::class, $userId]);
         $settings = UserSettings::where('user_id', $userId)->first();
         return $this->successResponse($settings);
     }
 
     public function update(UserSettingsRequest $request, $userId): JsonResponse
     {
-        $user = User::findOrFail($userId);
-        Gate::authorize('update', $user);
+        $this->authorize('update', [UserSettings::class, $userId]);
 
-        $settings = $this->userSettingsService->updateSettings($request, $user);
-        if (!$settings["success"]) {
-            return $this->errorResponse($settings["message"], 401);
-        }
-        return $this->successResponse($settings, $settings['message']);
+        $settings = $this->userSettingsService->updateSettings($userId, $request->validated());
+        return $this->successResponse($settings, 'Settings updated successfully');
     }
 }

@@ -9,13 +9,13 @@ use App\Http\Requests\UpdateWorkoutProgramRequest;
 use App\Http\Traits\ApiResponseTrait;
 use App\Models\WorkoutProgram;
 use App\Services\WorkoutProgramService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 
 class WorkoutProgramController extends Controller
 {
-    use ApiResponseTrait;
+    use ApiResponseTrait, AuthorizesRequests;
 
     public function __construct(private readonly WorkoutProgramService $workoutProgramService)
     {
@@ -29,28 +29,28 @@ class WorkoutProgramController extends Controller
 
     public function show(WorkoutProgram $workoutProgram): JsonResponse
     {
-        Gate::authorize('view', $workoutProgram);
+        $this->authorize('view', $workoutProgram);
         $workoutProgram->load('exercises');
         return $this->successResponse($workoutProgram);
     }
 
     public function store(StoreWorkoutProgramRequest $request): JsonResponse
     {
-        Gate::authorize('create', WorkoutProgram::class);
+        $this->authorize('create', WorkoutProgram::class);
         $workoutProgram = $this->workoutProgramService->createWorkoutProgram($request->validated(), Auth::user());
         return $this->createdResponse($workoutProgram);
     }
 
     public function update(UpdateWorkoutProgramRequest $request, WorkoutProgram $workoutProgram): JsonResponse
     {
-        Gate::authorize('update', $workoutProgram);
+        $this->authorize('update', $workoutProgram);
         $updatedWorkoutProgram = $this->workoutProgramService->updateWorkoutProgram($workoutProgram, $request->validated());
         return $this->successResponse($updatedWorkoutProgram);
     }
 
     public function destroy(WorkoutProgram $workoutProgram): JsonResponse
     {
-        Gate::authorize('delete', $workoutProgram);
+        $this->authorize('delete', $workoutProgram);
         $this->workoutProgramService->deleteWorkoutProgram($workoutProgram);
         return $this->deletedResponse();
     }

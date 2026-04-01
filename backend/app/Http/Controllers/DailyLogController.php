@@ -8,12 +8,12 @@ use App\Http\Resources\DailyLogResource;
 use App\Http\Traits\ApiResponseTrait;
 use App\Models\DailyLog;
 use App\Services\DailyLogService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Gate;
 
 class DailyLogController extends Controller
 {
-    use ApiResponseTrait;
+    use ApiResponseTrait, AuthorizesRequests;
 
     protected $dailyLogService;
 
@@ -27,7 +27,7 @@ class DailyLogController extends Controller
      */
     public function today($userId): JsonResponse
     {
-        Gate::authorize('view', [DailyLog::class, $userId]);
+        $this->authorize('view', [DailyLog::class, $userId]);
         $log = $this->dailyLogService->getTodayLog($userId);
         return $this->successResponse(
             DailyLogResource::make($log->load('meals'))
@@ -39,7 +39,7 @@ class DailyLogController extends Controller
      */
     public function weekly($userId): JsonResponse
     {
-        Gate::authorize('view', [DailyLog::class, $userId]);
+        $this->authorize('view', [DailyLog::class, $userId]);
         $logs = $this->dailyLogService->getWeeklyHistory($userId);
         return $this->successResponse(
             DailyLogResource::collection($logs)
@@ -51,7 +51,7 @@ class DailyLogController extends Controller
      */
     public function byDate($userId, $date): JsonResponse
     {
-        Gate::authorize('view', [DailyLog::class, $userId]);
+        $this->authorize('view', [DailyLog::class, $userId]);
         $log = $this->dailyLogService->getDailyLogByUserAndDate($userId, $date);
         return $this->successResponse(
             DailyLogResource::make($log->load('meals'))

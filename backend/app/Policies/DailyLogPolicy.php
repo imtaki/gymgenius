@@ -3,11 +3,12 @@
 namespace App\Policies;
 
 use App\Models\User;
+use App\Models\DailyLog;
 
 class DailyLogPolicy
 {
-   public function viewAny(User $user, DailyLog $dailyLog): bool
+    public function view(User $user, string $userId): bool
     {
-        return $user->id === $dailyLog->user_id;
+        return (int) $user->id === (int) $userId;
     }
 }

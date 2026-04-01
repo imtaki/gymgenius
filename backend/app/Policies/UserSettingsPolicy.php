@@ -7,27 +7,27 @@ use App\Models\User;
 class UserSettingsPolicy
 {
     /**
-     * Create a new policy instance.
+     * Determine if the user can view settings
      */
-   public function viewAny(User $user, User $targetUser)
+    public function view(User $user, string $userId): bool
     {
-        return $user->id === $targetUser->id;
+        return (int) $user->id === (int) $userId;
     }
 
     /**
      * Determine if the user can update settings
      */
-    public function update(User $user, User $targetUser)
+    public function update(User $user, string $userId): bool
     {
-        return $user->id === $targetUser->id;
+        return (int) $user->id === (int) $userId;
     }
 
     /**
      * Determine if the user can create settings
      */
-    public function create(User $user, User $targetUser)
+    public function create(User $user, string $userId): bool
     {
-        return $user->id === $targetUser->id;
+        return (int) $user->id === (int) $userId;
     }
 
 
