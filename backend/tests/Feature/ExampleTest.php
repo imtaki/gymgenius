@@ -2,14 +2,14 @@
 
 namespace Tests\Feature;
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestDox;
 
 class ExampleTest extends TestCase
 {
-    /**
-     * A basic test example.
-     */
+    #[Test]
+    #[TestDox('Test that the application returns a successful response')]
     public function test_the_application_returns_a_successful_response(): void
     {
         $response = $this->get('/');

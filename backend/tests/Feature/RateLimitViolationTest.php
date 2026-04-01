@@ -6,12 +6,18 @@ use App\Models\RateLimitViolation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestDox;
 
 class RateLimitViolationTest extends TestCase
 {
     use RefreshDatabase;
 
     // Logging violations tests
+    #[Test]
+    #[Group('RateLimitViolation.Logging')]
+    #[TestDox('Test that rate limit violation is logged when limit exceeded')]
     public function test_rate_limit_violation_is_logged_when_limit_exceeded(): void
     {
         // Make 6 login attempts to trigger rate limit
@@ -35,6 +41,9 @@ class RateLimitViolationTest extends TestCase
         $this->assertGreaterThan(0, $violations->count());
     }
 
+    #[Test]
+    #[Group('RateLimitViolation.Logging')]
+    #[TestDox('Test that violation record contains correct data')]
     public function test_violation_record_contains_correct_data(): void
     {
         for ($i = 0; $i < 6; $i++) {
@@ -60,6 +69,9 @@ class RateLimitViolationTest extends TestCase
     }
 
     // Model scopes tests
+    #[Test]
+    #[Group('RateLimitViolation.Scopes')]
+    #[TestDox('Test that recent scope filters violations by time window')]
     public function test_recent_scope_filters_violations_by_time_window(): void
     {
         $now = now();
@@ -71,6 +83,9 @@ class RateLimitViolationTest extends TestCase
         $this->assertEquals(2, $recent);
     }
 
+    #[Test]
+    #[Group('RateLimitViolation.Scopes')]
+    #[TestDox('Test that forUser scope filters by user ID')]
     public function test_for_user_scope_filters_by_user_id(): void
     {
         $user1 = User::factory()->create();
@@ -84,6 +99,9 @@ class RateLimitViolationTest extends TestCase
         $this->assertEquals(2, $violations);
     }
 
+    #[Test]
+    #[Group('RateLimitViolation.Scopes')]
+    #[TestDox('Test that forIp scope filters by IP address')]
     public function test_for_ip_scope_filters_by_ip_address(): void
     {
         RateLimitViolation::factory()->create(['ip_address' => '192.168.1.1']);
@@ -94,6 +112,9 @@ class RateLimitViolationTest extends TestCase
         $this->assertEquals(2, $violations);
     }
 
+    #[Test]
+    #[Group('RateLimitViolation.Scopes')]
+    #[TestDox('Test that forEndpoint scope filters by endpoint')]
     public function test_for_endpoint_scope_filters_by_endpoint(): void
     {
         RateLimitViolation::factory()->create(['endpoint' => '/api/login']);
@@ -105,6 +126,9 @@ class RateLimitViolationTest extends TestCase
     }
 
     // Analytics methods tests
+    #[Test]
+    #[Group('RateLimitViolation.Analytics')]
+    #[TestDox('Test that get statistics returns correct summary')]
     public function test_get_statistics_returns_correct_summary(): void
     {
         $now = now();
@@ -120,6 +144,9 @@ class RateLimitViolationTest extends TestCase
         $this->assertGreaterThan(0, $stats['unique_ips']);
     }
 
+    #[Test]
+    #[Group('RateLimitViolation.Analytics')]
+    #[TestDox('Test that get top endpoints returns endpoints sorted by violation count')]
     public function test_get_top_endpoints_returns_endpoints_sorted_by_violation_count(): void
     {
         RateLimitViolation::factory()->count(10)->create(['endpoint' => '/api/login']);
@@ -133,6 +160,9 @@ class RateLimitViolationTest extends TestCase
         $this->assertEquals('/api/meals', $topEndpoints[1]->endpoint);
     }
 
+    #[Test]
+    #[Group('RateLimitViolation.Analytics')]
+    #[TestDox('Test that get top IPs returns IPs sorted by violation count')]
     public function test_get_top_ips_returns_ips_sorted_by_violation_count(): void
     {
         RateLimitViolation::factory()->count(8)->create(['ip_address' => '192.168.1.1']);
@@ -146,6 +176,9 @@ class RateLimitViolationTest extends TestCase
     }
 
     // Relationships tests
+    #[Test]
+    #[Group('RateLimitViolation.Relationships')]
+    #[TestDox('Test that violation belongs to user')]
     public function test_violation_belongs_to_user(): void
     {
         $user = User::factory()->create();
@@ -154,6 +187,9 @@ class RateLimitViolationTest extends TestCase
         $this->assertTrue($violation->user->is($user));
     }
 
+    #[Test]
+    #[Group('RateLimitViolation.Relationships')]
+    #[TestDox('Test that violation maintains data when related user exists')]
     public function test_violation_maintains_data_when_related_user_exists(): void
     {
         $user = User::factory()->create();
@@ -164,6 +200,9 @@ class RateLimitViolationTest extends TestCase
     }
 
     // Cleanup tests
+    #[Test]
+    #[Group('RateLimitViolation.Cleanup')]
+    #[TestDox('Test that old violations can be deleted by date')]
     public function test_old_violations_can_be_deleted_by_date(): void
     {
         $now = now();
@@ -177,6 +216,9 @@ class RateLimitViolationTest extends TestCase
     }
 
     // Response headers tests
+    #[Test]
+    #[Group('RateLimitViolation.Headers')]
+    #[TestDox('Test that rate limited response includes proper headers')]
     public function test_rate_limited_response_includes_proper_headers(): void
     {
         $response = null;

@@ -32,7 +32,6 @@ class AuthTest extends TestCase
             'password' => 'Password123!',
         ]);
 
-        $response->dump();
         $response->assertStatus(201);
         $response->assertJsonStructure([
             'message',
