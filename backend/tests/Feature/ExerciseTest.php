@@ -99,8 +99,10 @@ class ExerciseTest extends TestCase
         $response = $this->withToken($token)->getJson("/api/exercises/{$exercise->id}");
 
         $response->assertOk();
-        $response->assertJsonPath('data.id', $exercise->id);
-        $response->assertJsonPath('data.name', $exercise->name);
+        $response->assertJsonStructure(['success', 'data' => ['id', 'type', 'attributes']]);
+        $response->assertJsonPath('data.type', 'exercise');
+        $response->assertJsonPath('data.attributes.name', $exercise->name);
+        $response->assertJsonPath('data.id', 'ex_' . $exercise->id);
     }
 
     #[Test]
@@ -159,6 +161,9 @@ class ExerciseTest extends TestCase
         ]);
 
         $response->assertCreated();
+        $response->assertJsonStructure(['success', 'data' => ['id', 'type', 'attributes'], 'message']);
+        $response->assertJsonPath('data.type', 'exercise');
+        $response->assertJsonPath('data.attributes.name', 'Bench Press');
         $this->assertDatabaseHas('exercises', [
             'name' => 'Bench Press',
             'user_id' => $user->id,

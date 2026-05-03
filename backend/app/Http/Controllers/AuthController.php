@@ -12,9 +12,11 @@ use App\Jobs\SendRateLimitedEmail;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Enums\UserType;
 use App\Http\Resources\UserResource;
+use App\Http\Traits\ApiResponseTrait;
 
 class AuthController extends Controller
 {
+    use ApiResponseTrait;
     public function register(RegisterRequest $request)
     {
         $credentials = $request->validated();
@@ -44,9 +46,9 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'User registered successfully',
-            'user' => $user,
+            'user' => new UserResource($user),
             'token' => $token
-        ]);
+        ], 201);
     }
 
     public function login(Request $request)
@@ -55,10 +57,10 @@ class AuthController extends Controller
 
         try {
             if (! $token = JWTAuth::attempt($credentials)) {
-                return response()->json(['error' => 'invalid_credentials'], 401);
+                return $this->errorResponse('invalid_credentials', 401);
             }
         } catch (JWTException $e) {
-            return response()->json(['error' => 'could_not_create_token'], 500);
+            return $this->errorResponse('could_not_create_token', 500);
         }
 
         $user = auth()->user();

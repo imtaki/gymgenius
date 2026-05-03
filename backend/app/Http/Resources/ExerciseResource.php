@@ -10,13 +10,14 @@ class ExerciseResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'muscleGroup' => $this->muscleGroup,
-            'description' => $this->description,
-            'user_id' => $this->user_id,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'id' => 'ex_' . $this->id,
+            'type' => 'exercise',
+            'attributes' => [
+                'name' => $this->name,
+                'muscle_group' => $this->muscleGroup,
+                'description' => $this->description,
+                'updated_at' => $this->updated_at?->toIso8601String(),
+            ],
         ];
     }
 }

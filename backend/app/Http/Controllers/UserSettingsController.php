@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponseTrait;
 use App\Http\Requests\UserSettingsRequest;
+use App\Http\Resources\UserSettingsResource;
 use App\Models\UserSettings;
 use App\Models\User;
 use App\Services\UserSettingsService;
@@ -25,7 +26,7 @@ class UserSettingsController extends Controller
     {
         $this->authorize('view', [UserSettings::class, $userId]);
         $settings = UserSettings::where('user_id', $userId)->first();
-        return $this->successResponse($settings);
+        return $this->successResponse(new UserSettingsResource($settings));
     }
 
     public function update(UserSettingsRequest $request, $userId): JsonResponse
@@ -33,6 +34,6 @@ class UserSettingsController extends Controller
         $this->authorize('update', [UserSettings::class, $userId]);
 
         $settings = $this->userSettingsService->updateSettings($userId, $request->validated());
-        return $this->successResponse($settings, 'Settings updated successfully');
+        return $this->successResponse(new UserSettingsResource($settings), 'Settings updated successfully');
     }
 }

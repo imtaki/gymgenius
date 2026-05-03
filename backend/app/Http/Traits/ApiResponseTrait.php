@@ -6,14 +6,22 @@ use Illuminate\Http\JsonResponse;
 
 trait ApiResponseTrait
 {
-    protected function successResponse($data, string $message = null, int $code = 200): JsonResponse
+    protected function successResponse($data, string $message = null, int $code = 200, array $meta = null): JsonResponse
     {
-        return response()->json([
+        $response = [
             'success' => true,
             'data' => $data,
-            'error' => null,
-            'meta' => null,
-        ], $code);
+        ];
+
+        if ($message) {
+            $response['message'] = $message;
+        }
+
+        if ($meta) {
+            $response['meta'] = $meta;
+        }
+
+        return response()->json($response, $code);
     }
 
     protected function createdResponse($data, string $message = 'Resource created successfully'): JsonResponse
@@ -21,8 +29,6 @@ trait ApiResponseTrait
         return response()->json([
             'success' => true,
             'data' => $data,
-            'error' => null,
-            'meta' => null,
             'message' => $message,
         ], 201);
     }
@@ -31,9 +37,7 @@ trait ApiResponseTrait
     {
         return response()->json([
             'success' => false,
-            'data' => null,
             'error' => $message,
-            'meta' => null,
         ], $code);
     }
 
@@ -41,9 +45,6 @@ trait ApiResponseTrait
     {
         return response()->json([
             'success' => true,
-            'data' => null,
-            'error' => null,
-            'meta' => null,
             'message' => 'Resource deleted successfully',
         ], 200);
     }

@@ -115,8 +115,10 @@ class MealTest extends TestCase
         $response = $this->withToken($token)->getJson("/api/meals/{$meal->id}");
 
         $response->assertOk();
-        $response->assertJsonPath('data.id', $meal->id);
-        $response->assertJsonPath('data.name', $meal->name);
+        $response->assertJsonStructure(['success', 'data' => ['id', 'type', 'attributes']]);
+        $response->assertJsonPath('data.type', 'meal');
+        $response->assertJsonPath('data.id', 'meal_' . $meal->id);
+        $response->assertJsonPath('data.attributes.name', $meal->name);
     }
 
     #[Test]

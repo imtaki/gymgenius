@@ -10,16 +10,19 @@ class DailyLogResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
-            'user_id' => $this->user_id,
-            'date' => $this->date,
-            'calories' => $this->calories,
-            'protein' => $this->protein,
-            'carbs' => $this->carbs,
-            'fats' => $this->fats,
-            'meals' => MealResource::collection($this->whenLoaded('meals')),
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'id' => 'log_' . $this->id,
+            'type' => 'daily_log',
+            'attributes' => [
+                'date' => $this->date,
+                'calories_kcal' => $this->calories,
+                'protein_g' => $this->protein,
+                'carbs_g' => $this->carbs,
+                'fats_g' => $this->fats,
+                'updated_at' => $this->updated_at?->toIso8601String(),
+            ],
+            'relationships' => [
+                'meals' => MealResource::collection($this->whenLoaded('meals')),
+            ],
         ];
     }
 }

@@ -4,16 +4,23 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use App\Enums\GoalType;
 use App\Models\User;
 
 class UserSettings extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUlids;
+
+    protected $primaryKey = 'settings_id';
+
+    protected $keyType = 'string';
+
+    public $incrementing = false;
+
     protected $fillable = [
         'user_id',
         'height',
-        'weight',
         'age',
         'caloric_goal',
         'goal_type',
@@ -21,9 +28,14 @@ class UserSettings extends Model
         'target_weight',
     ];
 
+    protected $hidden = [
+        'user_id',
+        'created_at',
+        'updated_at',
+    ];
+
     protected $casts = [
         'height' => 'float',
-        'weight' => 'integer',
         'age'=> 'integer',
         'caloric_goal' => 'integer',
         'goal_type' => GoalType::class,
