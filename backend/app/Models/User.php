@@ -11,6 +11,8 @@ use App\Enums\UserType;
 use App\Models\Meal;
 use App\Models\UserSettings;
 use App\Models\WorkoutLog;
+use App\Models\WorkoutSplit;
+use App\Models\Workout;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -104,5 +106,13 @@ class User extends Authenticatable implements JWTSubject
 
     public function workoutStreak() {
         return $this->hasOne(WorkoutStreak::class);
+    }
+
+    public function workoutSplits() {
+        return $this->hasMany(WorkoutSplit::class);
+    }
+
+    public function workoutSessions() {
+        return $this->hasMany(Workout::class);
     }
 }

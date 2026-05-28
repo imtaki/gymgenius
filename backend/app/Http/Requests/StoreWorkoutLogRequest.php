@@ -11,7 +11,7 @@ class StoreWorkoutLogRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return $this->user() !== null;
     }
 
     /**

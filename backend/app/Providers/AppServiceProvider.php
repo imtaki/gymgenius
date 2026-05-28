@@ -11,6 +11,9 @@ use App\Models\DailyLog;
 use App\Models\WorkoutLog;
 use App\Models\WorkoutProgram;
 use App\Models\WorkoutStreak;
+use App\Models\WorkoutSplit;
+use App\Models\Workout;
+use App\Models\LoggedSet;
 use App\Observers\MealObserver;
 use App\Observers\UserSettingsObserver;
 use App\Policies\MealPolicy;
@@ -20,6 +23,9 @@ use App\Policies\DailyLogPolicy;
 use App\Policies\WorkoutLogPolicy;
 use App\Policies\WorkoutProgramPolicy;
 use App\Policies\WorkoutStreakPolicy;
+use App\Policies\WorkoutSplitPolicy;
+use App\Policies\WorkoutPolicy;
+use App\Policies\LoggedSetPolicy;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -31,6 +37,9 @@ class AppServiceProvider extends ServiceProvider
         WorkoutLog::class => WorkoutLogPolicy::class,
         WorkoutProgram::class => WorkoutProgramPolicy::class,
         WorkoutStreak::class => WorkoutStreakPolicy::class,
+        WorkoutSplit::class => WorkoutSplitPolicy::class,
+        Workout::class => WorkoutPolicy::class,
+        LoggedSet::class => LoggedSetPolicy::class,
     ];
 
     /**

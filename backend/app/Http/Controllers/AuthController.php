@@ -5,8 +5,6 @@ use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Models\User;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\WelcomeMail;
 use Illuminate\Support\Facades\Cache;
 use App\Jobs\SendRateLimitedEmail;
 use App\Http\Requests\Auth\RegisterRequest;
@@ -33,8 +31,6 @@ class AuthController extends Controller
             $code = random_int(10000, 99999);
 
             Cache::put('verification_code_' . $user->email, $code, now()->addMinutes(10));
-
-            $user->save();
 
             $token = JWTAuth::fromUser($user);
 

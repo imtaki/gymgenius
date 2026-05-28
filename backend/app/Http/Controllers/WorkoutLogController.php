@@ -56,13 +56,13 @@ class WorkoutLogController extends Controller
         return $this->deletedResponse();
     }
 
-    public function getDataByRange($startDate, $endDate) 
+    public function getDataByRange($startDate, $endDate): JsonResponse
     {
-        $logs = $this->workoutLogService->getWorkoutDataByRange(
-        auth()->user(),
-         $startDate,
-         $endDate
-         );
-        return response()->json($data);
+        $logs = $this->workoutLogService->getWorkoutLogsByDateRange(
+            auth()->user(),
+            $startDate,
+            $endDate
+        );
+        return $this->successResponse($logs);
     }
 }

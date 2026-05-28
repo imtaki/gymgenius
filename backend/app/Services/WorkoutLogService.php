@@ -11,14 +11,14 @@ class WorkoutLogService
     public function getAllWorkoutLogs(User $user, $perPage = 15) 
     {
         return WorkoutLog::where('user_id', $user->id)
-        ->with('exercises')
+        ->with('exercise')
         ->latest('date')
         ->paginate($perPage);
     }
 
     public function getWorkoutLogById(int $id) 
     {
-        return WorkoutLog::with('exercises')->findOrFail($id);
+        return WorkoutLog::with('exercise')->findOrFail($id);
     }
 
     public function createWorkoutLog(User $user, array $data) 
@@ -49,7 +49,7 @@ class WorkoutLogService
     {
         return WorkoutLog::where('user_id', $user->id)
             ->whereBetween('date', [$startDate, $endDate])
-            ->with('exercises')
+            ->with('exercise')
             ->latest('date')
             ->get();
     }

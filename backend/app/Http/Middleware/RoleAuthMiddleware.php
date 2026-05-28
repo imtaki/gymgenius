@@ -16,10 +16,9 @@ class RoleAuthMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         $user = auth('api')->user();
-        if ($user->role == 'admin') {
-            return response()->json(['message' => 'admin'], Response::HTTP_OK);
-        } else {
-            return response()->json(['message' => 'Unauthorized'], 401);
+        if ($user && $user->role->value === 'admin') {
+            return $next($request);
         }
+        return response()->json(['message' => 'Unauthorized'], 401);
     }
 }

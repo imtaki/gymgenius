@@ -19,7 +19,7 @@ class WorkoutLogPolicy
 
     public function create(User $user, $userId)
     {
-        return $user->id == $userId;
+        return $user->id === $userId;
     }
 
     public function update(User $user, WorkoutLog $workoutLog): bool

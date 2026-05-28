@@ -6,6 +6,10 @@ use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\MealController;
 use App\Http\Controllers\UserSettingsController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WorkoutSplitController;
+use App\Http\Controllers\WorkoutSplitExerciseController;
+use App\Http\Controllers\WorkoutController;
+use App\Http\Controllers\LoggedSetController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -81,6 +85,87 @@ Route::middleware(['auth:api', 'throttle:200,1'])->group(function () {
             Route::scopeBindings()->group(function () {
                 Route::put('/{exercise}', [ExerciseController::class, 'update'])->name('exercises.update');
                 Route::delete('/{exercise}', [ExerciseController::class, 'destroy'])->name('exercises.destroy');
+            });
+        });
+    });
+
+    // Workout Splits Routes
+    Route::prefix('workout-splits')->group(function () {
+        Route::middleware('throttle:300,1')->group(function () {
+            Route::get('/', [WorkoutSplitController::class, 'index'])->name('workout-splits.index');
+            Route::scopeBindings()->group(function () {
+                Route::get('/{workoutSplit}', [WorkoutSplitController::class, 'show'])->name('workout-splits.show');
+            });
+        });
+
+        Route::middleware('throttle:30,1')->group(function () {
+            Route::post('/', [WorkoutSplitController::class, 'store'])->name('workout-splits.store');
+            Route::scopeBindings()->group(function () {
+                Route::put('/{workoutSplit}', [WorkoutSplitController::class, 'update'])->name('workout-splits.update');
+                Route::delete('/{workoutSplit}', [WorkoutSplitController::class, 'destroy'])->name('workout-splits.destroy');
+            });
+        });
+    });
+
+    // Workout Split Exercises Routes (nested under workout splits)
+    Route::prefix('workout-splits/{workoutSplit}/exercises')->group(function () {
+        Route::middleware('throttle:300,1')->group(function () {
+            Route::get('/', [WorkoutSplitExerciseController::class, 'index'])->name('workout-split-exercises.index');
+            Route::scopeBindings()->group(function () {
+                Route::get('/{exercise}', [WorkoutSplitExerciseController::class, 'show'])->name('workout-split-exercises.show');
+            });
+        });
+
+        Route::middleware('throttle:30,1')->group(function () {
+            Route::post('/', [WorkoutSplitExerciseController::class, 'store'])->name('workout-split-exercises.store');
+            Route::scopeBindings()->group(function () {
+                Route::put('/{exercise}', [WorkoutSplitExerciseController::class, 'update'])->name('workout-split-exercises.update');
+                Route::delete('/{exercise}', [WorkoutSplitExerciseController::class, 'destroy'])->name('workout-split-exercises.destroy');
+            });
+        });
+    });
+
+    // Workouts Routes
+    Route::prefix('workouts')->group(function () {
+        Route::middleware('throttle:300,1')->group(function () {
+            Route::get('/', [WorkoutController::class, 'index'])->name('workouts.index');
+            Route::scopeBindings()->group(function () {
+                Route::get('/{workout}', [WorkoutController::class, 'show'])->name('workouts.show');
+            });
+        });
+
+        Route::middleware('throttle:30,1')->group(function () {
+            Route::post('/', [WorkoutController::class, 'store'])->name('workouts.store');
+            Route::scopeBindings()->group(function () {
+                Route::put('/{workout}', [WorkoutController::class, 'update'])->name('workouts.update');
+                Route::delete('/{workout}', [WorkoutController::class, 'destroy'])->name('workouts.destroy');
+            });
+        });
+    });
+
+    // Logged Sets Routes (nested under workouts)
+    Route::prefix('workouts/{workout}/sets')->group(function () {
+        Route::middleware('throttle:300,1')->group(function () {
+            Route::get('/', [LoggedSetController::class, 'index'])->name('logged-sets.index');
+        });
+
+        Route::middleware('throttle:30,1')->group(function () {
+            Route::post('/', [LoggedSetController::class, 'store'])->name('logged-sets.store');
+        });
+    });
+
+    // Direct logged sets routes (for updating/deleting specific sets)
+    Route::prefix('sets')->group(function () {
+        Route::middleware('throttle:300,1')->group(function () {
+            Route::scopeBindings()->group(function () {
+                Route::get('/{set}', [LoggedSetController::class, 'show'])->name('sets.show');
+            });
+        });
+
+        Route::middleware('throttle:30,1')->group(function () {
+            Route::scopeBindings()->group(function () {
+                Route::put('/{set}', [LoggedSetController::class, 'update'])->name('sets.update');
+                Route::delete('/{set}', [LoggedSetController::class, 'destroy'])->name('sets.destroy');
             });
         });
     });
