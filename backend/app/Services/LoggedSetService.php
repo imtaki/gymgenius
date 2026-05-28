@@ -15,7 +15,11 @@ class LoggedSetService
     private const CACHE_TTL = 3600;
 
     /**
-     * Get logged sets for a workout
+     * Get logged sets for a workout (cached, returns all).
+     * Safe: typically < 100 sets per workout. Uses cache tags for invalidation.
+     *
+     * @param int $workoutId
+     * @return Collection All logged sets for the workout
      */
     public function getByWorkout(int $workoutId): Collection
     {
@@ -30,6 +34,23 @@ class LoggedSetService
                     ->get();
             }
         );
+    }
+
+    /**
+     * Get logged sets for a workout with pagination.
+     * Bypass cache; use for paginated UI or data export.
+     *
+     * @param int $workoutId
+     * @param int $perPage
+     * @return \Illuminate\Pagination\LengthAwarePaginator
+     */
+    public function getByWorkoutPaginated(int $workoutId, int $perPage = 50): \Illuminate\Pagination\LengthAwarePaginator
+    {
+        return LoggedSet::where('workout_id', $workoutId)
+            ->with('workoutSplitExercise.exercise')
+            ->orderBy('workout_split_exercise_id')
+            ->orderBy('set_number')
+            ->paginate($perPage);
     }
 
     /**

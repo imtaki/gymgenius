@@ -13,17 +13,50 @@ use Illuminate\Support\Collection;
 class ExerciseService
 {
     /**
-     * Get all exercises for a user
+     * Get all exercises for a user (cached, suitable for < 1000 exercises)
+     * For users with many exercises, use getExercisesByUserPaginated() instead.
      */
     public function getExercisesByUser($userId): Collection
     {
         return Cache::remember("user_{$userId}_exercises", now()->addMinutes(30), function () use ($userId) {
             try {
-                return Exercise::where('user_id', $userId)->get();
+                return Exercise::where('user_id', $userId)
+                    ->orderBy('name')
+                    ->get();
             } catch (\Exception $e) {
                 throw new \Exception("Failed to retrieve exercises: {$e->getMessage()}");
             }
         });
+    }
+
+    /**
+     * Get exercises for a user with pagination.
+     * Use this for large result sets or when cursor is provided.
+     *
+     * @param int $userId
+     * @param int $perPage
+     * @return \Illuminate\Pagination\LengthAwarePaginator
+     */
+    public function getExercisesByUserPaginated(int $userId, int $perPage = 20)
+    {
+        return Exercise::where('user_id', $userId)
+            ->orderBy('name')
+            ->paginate($perPage);
+    }
+
+    /**
+     * Get exercises for a user using cursor pagination (keyset pagination).
+     * Efficient for large datasets and consistent ordering.
+     *
+     * @param int $userId
+     * @param int $perPage
+     * @return \Illuminate\Pagination\CursorPaginator
+     */
+    public function getExercisesByUserCursor(int $userId, int $perPage = 20)
+    {
+        return Exercise::where('user_id', $userId)
+            ->orderBy('id')
+            ->cursorPaginate($perPage);
     }
 
     /**

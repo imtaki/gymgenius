@@ -26,6 +26,11 @@ class DailyLogService
         
     }
 
+    /**
+     * Get 7-day history of daily logs.
+     * Limited by date range (7 days), safe for unbounded get().
+     * Note: Maximum ~7 rows, no pagination needed.
+     */
     public function getWeeklyHistory($userId) 
     {
         $sevenDaysAgo = Carbon::now()->subDays(7)->toDateString();
@@ -35,6 +40,25 @@ class DailyLogService
             ->orderBy('date', 'desc')
             ->with('meals')
             ->get();
+    }
+
+    /**
+     * Get daily logs for a date range with pagination.
+     * Use this for arbitrary date ranges or UI that requires pagination.
+     *
+     * @param int $userId
+     * @param string $startDate
+     * @param string $endDate
+     * @param int $perPage
+     * @return \Illuminate\Pagination\LengthAwarePaginator
+     */
+    public function getDailyLogsByDateRangePaginated(int $userId, string $startDate, string $endDate, int $perPage = 30)
+    {
+        return DailyLog::where('user_id', $userId)
+            ->whereBetween('date', [$startDate, $endDate])
+            ->with('meals')
+            ->orderBy('date', 'desc')
+            ->paginate($perPage);
     }
 
     public function getTodayLog($userId) 

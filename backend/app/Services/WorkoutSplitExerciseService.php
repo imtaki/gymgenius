@@ -16,7 +16,11 @@ class WorkoutSplitExerciseService
     private const CACHE_TTL = 3600;
 
     /**
-     * Get exercises for a workout split
+     * Get exercises for a workout split (cached, returns all).
+     * Safe: typically < 50 exercises per split. Uses cache tags for invalidation.
+     *
+     * @param int $workoutSplitId
+     * @return Collection All exercises in the split
      */
     public function getByWorkoutSplit(int $workoutSplitId): Collection
     {
@@ -30,6 +34,22 @@ class WorkoutSplitExerciseService
                     ->get();
             }
         );
+    }
+
+    /**
+     * Get exercises for a workout split with pagination.
+     * Bypass cache; use for paginated UI or data export.
+     *
+     * @param int $workoutSplitId
+     * @param int $perPage
+     * @return \Illuminate\Pagination\LengthAwarePaginator
+     */
+    public function getByWorkoutSplitPaginated(int $workoutSplitId, int $perPage = 50): \Illuminate\Pagination\LengthAwarePaginator
+    {
+        return WorkoutSplitExercise::where('workout_split_id', $workoutSplitId)
+            ->with('exercise')
+            ->orderBy('order')
+            ->paginate($perPage);
     }
 
     /**
