@@ -18,10 +18,11 @@ class UserResource extends JsonResource
             'id'          => 'user_' . $this->id,
             'type'        => 'user',
             'attributes' => [
-                'name'        => $this->name,
-                'email'       => $this->email,
-                'is_verified' => (bool) $this->is_verified,
-                'role'        => $this->role,
+                'name'                => $this->name,
+                'email'               => $this->email,
+                'is_verified'         => (bool) $this->is_verified,
+                'role'                => $this->role,
+                'subscription_tier'   => $this->subscription_tier,
             ],
         ];
     }

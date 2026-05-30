@@ -4,6 +4,7 @@ namespace App\Enums;
 
 enum SubscriptionTierType: string
 {
-    case STARTER = 'starter';
-    case ELITE = 'elite';
+    case FREE = 'free';
+    case PRO = 'pro';
+    case PRO_PLUS = 'pro_plus';
 }

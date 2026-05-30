@@ -20,7 +20,7 @@ return new class extends Migration
             $table->decimal('weight', 8, 2)->nullable();
             $table->integer('rpe')->nullable(); // Rate of Perceived Exertion (1-10)
             $table->timestamps();
-            
+
             // Indexes for efficient queries
             $table->index('workout_id');
             $table->index('workout_split_exercise_id');

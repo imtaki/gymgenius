@@ -107,6 +107,11 @@
             "format": "date-time",
             "nullable": true
           },
+          "subscription_tier": {
+            "type": "string",
+            "enum": ["free", "pro", "pro_plus"],
+            "example": "free"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time"
@@ -265,6 +270,17 @@
           "updated_at": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "UpdateSubscriptionRequest": {
+        "type": "object",
+        "required": ["tier"],
+        "properties": {
+          "tier": {
+            "type": "string",
+            "enum": ["free", "pro", "pro_plus"],
+            "example": "pro"
           }
         }
       },
@@ -1067,6 +1083,40 @@
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/user/subscription": {
+      "patch": {
+        "tags": ["Auth"],
+        "summary": "Update user subscription tier",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSubscriptionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Subscription tier updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
           }
         }
       }

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Enums\SubscriptionTierType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -82,6 +83,25 @@ class AuthTest extends TestCase
 
         $response->assertUnprocessable();
         $response->assertJsonValidationErrors(['email']);
+    }
+
+    #[Test]
+    #[Group('register')]
+    public function test_register_assigns_free_tier(): void
+    {
+        $email = 'tiertest@example.com';
+
+        $response = $this->postJson('/api/register', [
+            'name' => 'Tier Test',
+            'email' => $email,
+            'password' => 'Password123!',
+        ]);
+
+        $response->assertStatus(201);
+
+        $user = User::where('email', $email)->first();
+        $this->assertNotNull($user);
+        $this->assertEquals(SubscriptionTierType::FREE, $user->subscription_tier);
     }
 
     #[Test]

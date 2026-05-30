@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use App\Enums\UserType;
+use App\Enums\SubscriptionTierType;
 use App\Models\Meal;
 use App\Models\UserSettings;
 use App\Models\WorkoutLog;
@@ -29,6 +30,7 @@ class User extends Authenticatable implements JWTSubject
         'email',
         'password',
         'role',
+        'subscription_tier',
     ];
 
     /**
@@ -52,6 +54,7 @@ class User extends Authenticatable implements JWTSubject
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserType::class,
+            'subscription_tier' => SubscriptionTierType::class,
         ];
     }
     // JWT Implementation

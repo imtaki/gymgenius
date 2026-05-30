@@ -46,4 +46,12 @@ class WorkoutPolicy
     {
         return $user->id === $workout->user_id;
     }
+
+    /**
+     * Determine if the user can manage (manage nested resources) a workout
+     */
+    public function manage(User $user, Workout $workout): bool
+    {
+        return $user->id === $workout->user_id;
+    }
 }

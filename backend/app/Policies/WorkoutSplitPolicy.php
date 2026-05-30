@@ -46,4 +46,12 @@ class WorkoutSplitPolicy
     {
         return $user->id === $workoutSplit->user_id;
     }
+
+    /**
+     * Determine if the user can manage (manage nested resources) a workout split
+     */
+    public function manage(User $user, WorkoutSplit $workoutSplit): bool
+    {
+        return $user->id === $workoutSplit->user_id;
+    }
 }
