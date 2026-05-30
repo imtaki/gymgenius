@@ -9,6 +9,16 @@ export interface Meal {
     image?: string;
 }
 
+export interface User {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    subscription_tier: 'free' | 'pro' | 'pro_plus';
+    created_at: string;
+    updated_at: string;
+}
+
 export interface DecodedToken {
     id: number;
     username: string;
