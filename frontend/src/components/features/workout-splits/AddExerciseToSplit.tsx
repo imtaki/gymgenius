@@ -6,7 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { addExerciseToSplitSchema } from "@/lib/workoutSchemas";
 import { addExerciseToSplit } from "@/app/api/workoutSplitService";
 import { getExercises } from "@/app/api/exerciseService";
-import { WorkoutSplitExercise, Exercise } from "@/types/workouts";
+import { WorkoutSplitExercise } from "@/types/workouts";
+import { Exercise } from "@/types/exercises";
 import { Loader, Search } from "lucide-react";
 
 interface AddExerciseToSplitProps {
@@ -17,7 +18,7 @@ interface AddExerciseToSplitProps {
 }
 
 interface ExerciseOption extends Exercise {
-  id: string | number;
+  id: string;
 }
 
 export default function AddExerciseToSplit({

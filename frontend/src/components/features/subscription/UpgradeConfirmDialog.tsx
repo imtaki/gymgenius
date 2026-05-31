@@ -1,4 +1,4 @@
-`use client`;
+'use client';
 
 import { SubscriptionTier, SUBSCRIPTION_TIERS } from "@/lib/subscriptionSchemas";
 
@@ -25,12 +25,12 @@ export function UpgradeConfirmDialog({
   const currentData = SUBSCRIPTION_TIERS[currentTier];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="max-w-sm rounded-lg bg-white p-6 shadow-xl">
-        <h2 className="mb-4 text-xl font-bold">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+      <div className="max-w-sm rounded-lg bg-zinc-950 border border-zinc-800 p-6 shadow-xl">
+        <h2 className="mb-4 text-xl font-bold text-white">
           {selectedTier === currentTier ? "Already subscribed" : "Confirm upgrade"}
         </h2>
-        <p className="mb-6 text-gray-600">
+        <p className="mb-6 text-zinc-400">
           {selectedTier === currentTier
             ? `You are already on the ${currentData.name} plan.`
             : `Upgrade from ${currentData.name} to ${selectedData.name} plan?`}
@@ -39,14 +39,14 @@ export function UpgradeConfirmDialog({
           <button
             onClick={onCancel}
             disabled={isLoading}
-            className="flex-1 rounded-lg border-2 border-gray-300 px-4 py-2 font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            className="flex-1 rounded-lg border-2 border-zinc-700 px-4 py-2 font-semibold text-zinc-300 hover:bg-zinc-900 disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
             disabled={isLoading || selectedTier === currentTier}
-            className="flex-1 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 rounded-lg bg-emerald-600 px-4 py-2 font-semibold text-white hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? "Processing..." : "Confirm"}
           </button>

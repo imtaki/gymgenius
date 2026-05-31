@@ -1,5 +1,6 @@
 import { getWorkoutById } from "@/app/api/workoutSessionService";
 import WorkoutSession from "@/components/features/workouts/WorkoutSession";
+import Link from "next/dist/client/link";
 
 export const metadata = {
   title: "Workout Session",
@@ -25,10 +26,12 @@ export default async function WorkoutPage({ params }: WorkoutPageProps) {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-6">
         <div className="text-center">
-          <p className="text-zinc-400 mb-4">{error || "Workout not found"}</p>
-          <a href="/workouts" className="text-lime-400 hover:text-lime-300">
+          <p className={`mb-4 ${error ? "text-red-400" : "text-zinc-400"}`}>
+            {error || "Workout not found"}
+          </p>
+          <Link href="/workouts" className="text-emerald-400 hover:text-emerald-300">
             Back to Workouts
-          </a>
+          </Link>
         </div>
       </div>
     );

@@ -256,7 +256,7 @@ export default function WorkoutList({ initialWorkouts, error }: WorkoutListProps
                           </span>
                           {workout.started_at && (
                             <>
-                              <span className="text-zinc-800">·</span>
+                              <span className="text-zinc-800">â€¢</span>
                               <span className="flex items-center gap-1 text-xs text-zinc-600 font-mono">
                                 <Clock className="w-3 h-3" /> {new Date(workout.started_at).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
                               </span>
