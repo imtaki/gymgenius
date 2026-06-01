@@ -1,37 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import Footer from "../../components/layout/Footer";
 import NavBar from "../../components/layout/NavBar";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "GymGenius - Health & Fitness Tracker",
   description: "Get fit with GymGenius - your ultimate health & fitness tracker.",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function LandingLayout({ children }: { children: React.ReactNode }) {
+  // Do not render <html>/<body> in nested layouts — root layout handles them.
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <NavBar />
-        {children}
-        <Footer />
-      </body>
-    </html>
+    <>
+      <NavBar />
+      {children}
+      <Footer />
+    </>
   );
 }
