@@ -2,8 +2,14 @@
 import axiosInstance from "./axios";
 
 export const getUser = () => {
-  const user = localStorage.getItem("user")
-  return user ? JSON.parse(user) : null;
+    try {
+        if (typeof window === "undefined" || !window.localStorage) return null;
+        const user = window.localStorage.getItem("user");
+        return user ? JSON.parse(user) : null;
+    } catch (err) {
+        // In environments where localStorage is unavailable, return null
+        return null;
+    }
 }
 
 export const registerUser = async (name: string, email: string, password: string) => {
